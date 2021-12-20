@@ -37,13 +37,8 @@ static curl_context_t* curl_createContext(curl_socket_t sockfd) {
   return context;
 }
 
-static void curl_closeCb(uv_handle_t* handle) {
-  curl_context_t* context = (curl_context_t*)handle->data;
-  delete context;
-}
-
 static void curl_destroyContext(curl_context_t* context) {
-  uv_close((uv_handle_t*)&context->poll_handle, curl_closeCb);
+  uv_close((uv_handle_t*)&context->poll_handle, [](uv_handle_t* handle) { delete (curl_context_t*)handle->data; });
 }
 
 static void curl_checkMultiInfo() {

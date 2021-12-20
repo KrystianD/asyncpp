@@ -19,6 +19,9 @@ class CurlRequest {
   std::string url;
   curl_slist* slist = nullptr;
 
+  // POST
+  std::string payload;
+
   friend void fill_request(CURL* curl, const CurlRequest& request);
 
  public:
@@ -33,6 +36,9 @@ class CurlRequest {
   CurlRequest& operator=(CurlRequest&&) = default;
 
   void addHeader(const std::string_view& name, const std::string_view& value);
+
+  void setPayload(const std::string& data) { this->payload = data; }
+  void setPayload(std::string&& data) { this->payload = std::move(data); }
 };
 
 class CurlResponse {
@@ -68,6 +74,8 @@ struct CurlSession {
 };
 
 CurlRequest get(const std::string& url);
+CurlRequest post(const std::string& url);
+
 void execute(CurlRequest&& request, CurlCompletedCb completedCb);
 
 void unload();

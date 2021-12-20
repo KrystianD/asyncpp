@@ -15,10 +15,16 @@ task<void> testPost() {
   printf("%s\n", resp.to_string().c_str());
 }
 
+task<void> testDelete() {
+  auto resp = co_await asyncpp_uv_curl::uvCurlDELETE("https://httpbin.org/delete", "key=val");
+  printf("%s\n", resp.to_string().c_str());
+}
+
 task<void> asyncMain() {
   printf("asyncMain BEGIN\n");
   co_await testGet();
   co_await testPost();
+  co_await testDelete();
   printf("asyncMain END\n");
 }
 

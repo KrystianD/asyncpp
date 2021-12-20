@@ -168,6 +168,7 @@ static size_t curl_writefunction(void* data, size_t size, size_t nmemb, void* us
 
 CurlRequest get(const std::string& url) { return {Method::GET, url}; }
 CurlRequest post(const std::string& url) { return {Method::POST, url}; }
+CurlRequest delete_(const std::string& url) { return {Method::DELETE, url}; }
 
 void fill_request(CURL* curl, const CurlRequest& request) {
   curl_easy_setopt(curl, CURLOPT_URL, request.url.c_str());
@@ -180,6 +181,11 @@ void fill_request(CURL* curl, const CurlRequest& request) {
       break;
     case Method::POST:
       curl_easy_setopt(curl, CURLOPT_POST, 1L);
+      curl_easy_setopt(curl, CURLOPT_POSTFIELDS, request.payload.data());
+      curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, request.payload.size());
+      break;
+    case Method::DELETE:
+      curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
       curl_easy_setopt(curl, CURLOPT_POSTFIELDS, request.payload.data());
       curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, request.payload.size());
       break;

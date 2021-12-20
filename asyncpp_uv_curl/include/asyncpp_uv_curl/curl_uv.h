@@ -12,6 +12,7 @@ struct CurlSession;
 enum class Method {
   GET,
   POST,
+  DELETE,
 };
 
 class CurlRequest {
@@ -75,6 +76,7 @@ struct CurlSession {
 
 CurlRequest get(const std::string& url);
 CurlRequest post(const std::string& url);
+CurlRequest delete_(const std::string& url);
 
 void execute(CurlRequest&& request, CurlCompletedCb completedCb);
 

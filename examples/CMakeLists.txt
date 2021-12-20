@@ -11,3 +11,9 @@ target_link_libraries(example2_then asyncpp_uv)
 
 add_executable(example3_curl example3_curl.cpp)
 target_link_libraries(example3_curl asyncpp_uv_curl)
+
+add_executable(example3_tcp example3_tcp.cpp)
+target_link_libraries(example3_tcp asyncpp_uv -lcrypto -lssl)
+
+add_executable(example4_ws example4_ws.cpp)
+target_link_libraries(example4_ws asyncpp_uv -lcrypto -lssl)

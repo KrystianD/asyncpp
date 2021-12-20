@@ -97,6 +97,13 @@ struct task {
   [[nodiscard]] bool await_ready() const { return _state->_ready; }
 
   void await_suspend(std::coroutine_handle<> resume_cb) { _state->set_coroutine_callback(resume_cb); }
+
+  void then(const std::function<void(T)>& resume_cb) {
+    if (await_ready())
+      resume_cb(await_resume());
+    else
+      _state->set_coroutine_callback([this, resume_cb]() { resume_cb(await_resume()); });
+  }
 };
 
 template<>
@@ -126,6 +133,13 @@ struct task<void> {
   [[nodiscard]] bool await_ready() const { return _state->_ready; }
 
   void await_suspend(std::coroutine_handle<> resume_cb) { _state->set_coroutine_callback(resume_cb); }
+
+  void then(const std::function<void(void)>& resume_cb) {
+    if (await_ready())
+      resume_cb();
+    else
+      _state->set_coroutine_callback(resume_cb);
+  }
 };
 
 template<typename T>

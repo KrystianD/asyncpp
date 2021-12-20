@@ -16,6 +16,8 @@ namespace curl_uv {
 CURLM* curlMultiHandle;
 uv_timer_t uvTimeout;
 
+void fillResponse(CurlSession* session, CURLcode result);
+
 typedef struct curl_context_s {
   uv_poll_t poll_handle;
   curl_socket_t sockfd;
@@ -57,24 +59,17 @@ static void check_multi_info() {
            returned pointer points to will not survive calling
                  curl_multi_cleanup, curl_multi_remove_handle or
                                          curl_easy_cleanup." */
-        CURL* easy_handle = message->easy_handle;
+        CurlSession* session;
+        curl_easy_getinfo(message->easy_handle, CURLINFO_PRIVATE, &session);
 
         CURLcode result = message->data.result;
 
-        long http_code = 0;
-        curl_easy_getinfo(easy_handle, CURLINFO_RESPONSE_CODE, &http_code);
+        fillResponse(session, result);
 
-        CurlSession* session;
-        curl_easy_getinfo(easy_handle, CURLINFO_PRIVATE, &session);
-
-        session->response.result = result;
-        session->response.httpCode = http_code;
-
-        if (result != CURLE_OK) session->response.error = session->errorBuffer;
         session->completedCb(std::move(session->response));
 
-        curl_multi_remove_handle(curlMultiHandle, easy_handle);
-        curl_easy_cleanup(easy_handle);
+        curl_multi_remove_handle(curlMultiHandle, session->handle);
+        curl_easy_cleanup(session->handle);
         delete session;
         break;
       }
@@ -192,6 +187,16 @@ void fill_request(CURL* curl, const CurlRequest& request) {
   }
 }
 
+void fillResponse(CurlSession* session, CURLcode result) {
+  long http_code = 0;
+  curl_easy_getinfo(session->handle, CURLINFO_RESPONSE_CODE, &http_code);
+
+  session->response.result = result;
+  session->response.httpCode = http_code;
+
+  if (result != CURLE_OK) session->response.error = session->errorBuffer;
+}
+
 void execute(CurlRequest&& request, CurlCompletedCb completedCb) {
   CurlSession* session = new CurlSession();
 
@@ -213,6 +218,33 @@ void execute(CurlRequest&& request, CurlCompletedCb completedCb) {
     delete session;
     throw std::runtime_error("curl add handle error");
   }
+}
+
+CurlResponse executeSync(CurlRequest&& request) {
+  CurlSession* session = new CurlSession();
+
+  session->request = std::move(request);
+  session->response.buffer.reserve(1024);
+  session->handle = curl_easy_init();
+
+  curl_easy_setopt(session->handle, CURLOPT_WRITEFUNCTION, curl_writefunction);
+  curl_easy_setopt(session->handle, CURLOPT_WRITEDATA, session);
+  curl_easy_setopt(session->handle, CURLOPT_PRIVATE, session);
+  curl_easy_setopt(session->handle, CURLOPT_ERRORBUFFER, session->errorBuffer);
+  curl_easy_setopt(session->handle, CURLOPT_FOLLOWLOCATION, 1L);
+
+  fillRequest(session->handle, session->request);
+
+  CURLcode result = curl_easy_perform(session->handle);
+
+  fillResponse(session, result);
+
+  curl_easy_cleanup(session->handle);
+
+  CurlResponse response = std::move(session->response);
+  delete session;
+
+  return std::move(response);
 }
 
 void CurlRequest::addHeader(const std::string_view& name, const std::string_view& value) {

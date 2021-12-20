@@ -79,6 +79,7 @@ CurlRequest post(const std::string& url);
 CurlRequest delete_(const std::string& url);
 
 void execute(CurlRequest&& request, CurlCompletedCb completedCb);
+CurlResponse executeSync(CurlRequest&& request);
 
 void unload();
 }  // namespace curl_uv

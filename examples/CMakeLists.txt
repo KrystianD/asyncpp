@@ -6,5 +6,8 @@ target_link_libraries(example_readme asyncpp_uv)
 add_executable(example1_sleep example1_sleep.cpp)
 target_link_libraries(example1_sleep asyncpp_uv)
 
-add_executable(example2_curl example2_curl.cpp)
-target_link_libraries(example2_curl asyncpp_uv_curl)
+add_executable(example2_then example2_then.cpp)
+target_link_libraries(example2_then asyncpp_uv)
+
+add_executable(example3_curl example3_curl.cpp)
+target_link_libraries(example3_curl asyncpp_uv_curl)

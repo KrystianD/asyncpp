@@ -23,7 +23,7 @@ class CurlRequest {
   // POST
   std::string payload;
 
-  friend void fill_request(CURL* curl, const CurlRequest& request);
+  friend void fillRequest(CURL* curl, const CurlRequest& request);
 
  public:
   CurlRequest() = default;

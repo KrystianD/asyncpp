@@ -23,7 +23,7 @@ typedef struct curl_context_s {
   curl_socket_t sockfd;
 } curl_context_t;
 
-static curl_context_t* create_curl_context(curl_socket_t sockfd) {
+static curl_context_t* curl_createContext(curl_socket_t sockfd) {
   curl_context_t* context;
 
   context = new curl_context_t();
@@ -37,16 +37,16 @@ static curl_context_t* create_curl_context(curl_socket_t sockfd) {
   return context;
 }
 
-static void curl_close_cb(uv_handle_t* handle) {
+static void curl_closeCb(uv_handle_t* handle) {
   curl_context_t* context = (curl_context_t*)handle->data;
   delete context;
 }
 
-static void destroy_curl_context(curl_context_t* context) {
-  uv_close((uv_handle_t*)&context->poll_handle, curl_close_cb);
+static void curl_destroyContext(curl_context_t* context) {
+  uv_close((uv_handle_t*)&context->poll_handle, curl_closeCb);
 }
 
-static void check_multi_info() {
+static void curl_checkMultiInfo() {
   CURLMsg* message;
   int pending;
 
@@ -91,27 +91,27 @@ static void curl_perform(uv_poll_t* req, int status [[maybe_unused]], int events
 
   curl_multi_socket_action(curlMultiHandle, context->sockfd, flags, &running_handles);
 
-  check_multi_info();
+  curl_checkMultiInfo();
 }
 
-static void on_timeout(uv_timer_t* req [[maybe_unused]]) {
+static void curl_onTimeout(uv_timer_t* req [[maybe_unused]]) {
   int running_handles;
   curl_multi_socket_action(curlMultiHandle, CURL_SOCKET_TIMEOUT, 0, &running_handles);
-  check_multi_info();
+  curl_checkMultiInfo();
 }
 
-static int start_timeout(CURLM* multi [[maybe_unused]], long timeout_ms, void* userp [[maybe_unused]]) {
+static int curl_startTimeout(CURLM* multi [[maybe_unused]], long timeout_ms, void* userp [[maybe_unused]]) {
   if (timeout_ms < 0) {
     uv_timer_stop(&uvTimeout);
   } else {
     if (timeout_ms == 0) timeout_ms = 1; /* 0 means directly call socket_action, but we'll do it in a bit */
-    uv_timer_start(&uvTimeout, on_timeout, (unsigned long)timeout_ms, 0);
+    uv_timer_start(&uvTimeout, curl_onTimeout, (unsigned long)timeout_ms, 0);
   }
   return 0;
 }
 
-static int handle_socket(CURL* easy [[maybe_unused]], curl_socket_t s, int action, void* userp [[maybe_unused]],
-                         void* socketp) {
+static int curl_handleSocket(CURL* easy [[maybe_unused]], curl_socket_t s, int action, void* userp [[maybe_unused]],
+                             void* socketp) {
   curl_context_t* curl_context;
   int events = 0;
 
@@ -119,7 +119,7 @@ static int handle_socket(CURL* easy [[maybe_unused]], curl_socket_t s, int actio
     case CURL_POLL_IN:
     case CURL_POLL_OUT:
     case CURL_POLL_INOUT:
-      curl_context = socketp ? (curl_context_t*)socketp : create_curl_context(s);
+      curl_context = socketp ? (curl_context_t*)socketp : curl_createContext(s);
 
       curl_multi_assign(curlMultiHandle, s, (void*)curl_context);
 
@@ -131,7 +131,7 @@ static int handle_socket(CURL* easy [[maybe_unused]], curl_socket_t s, int actio
     case CURL_POLL_REMOVE:
       if (socketp) {
         uv_poll_stop(&((curl_context_t*)socketp)->poll_handle);
-        destroy_curl_context((curl_context_t*)socketp);
+        curl_destroyContext((curl_context_t*)socketp);
         curl_multi_assign(curlMultiHandle, s, NULL);
       }
       break;
@@ -142,7 +142,7 @@ static int handle_socket(CURL* easy [[maybe_unused]], curl_socket_t s, int actio
   return 0;
 }
 
-static size_t curl_writefunction(void* data, size_t size, size_t nmemb, void* userp) {
+static size_t curl_writeFunction(void* data, size_t size, size_t nmemb, void* userp) {
   CurlSession* session = (CurlSession*)userp;
 
   size_t realsize = size * nmemb;
@@ -165,7 +165,7 @@ CurlRequest get(const std::string& url) { return {Method::GET, url}; }
 CurlRequest post(const std::string& url) { return {Method::POST, url}; }
 CurlRequest delete_(const std::string& url) { return {Method::DELETE, url}; }
 
-void fill_request(CURL* curl, const CurlRequest& request) {
+void fillRequest(CURL* curl, const CurlRequest& request) {
   curl_easy_setopt(curl, CURLOPT_URL, request.url.c_str());
   curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, 2000L);
   if (request.slist != nullptr) curl_easy_setopt(curl, CURLOPT_HTTPHEADER, request.slist);
@@ -205,13 +205,13 @@ void execute(CurlRequest&& request, CurlCompletedCb completedCb) {
   session->handle = curl_easy_init();
   session->completedCb = std::move(completedCb);
 
-  curl_easy_setopt(session->handle, CURLOPT_WRITEFUNCTION, curl_writefunction);
+  curl_easy_setopt(session->handle, CURLOPT_WRITEFUNCTION, curl_writeFunction);
   curl_easy_setopt(session->handle, CURLOPT_WRITEDATA, session);
   curl_easy_setopt(session->handle, CURLOPT_PRIVATE, session);
   curl_easy_setopt(session->handle, CURLOPT_ERRORBUFFER, session->errorBuffer);
   curl_easy_setopt(session->handle, CURLOPT_FOLLOWLOCATION, 1L);
 
-  fill_request(session->handle, session->request);
+  fillRequest(session->handle, session->request);
 
   CURLMcode c = curl_multi_add_handle(curlMultiHandle, session->handle);
   if (c != CURLM_OK) {
@@ -227,7 +227,7 @@ CurlResponse executeSync(CurlRequest&& request) {
   session->response.buffer.reserve(1024);
   session->handle = curl_easy_init();
 
-  curl_easy_setopt(session->handle, CURLOPT_WRITEFUNCTION, curl_writefunction);
+  curl_easy_setopt(session->handle, CURLOPT_WRITEFUNCTION, curl_writeFunction);
   curl_easy_setopt(session->handle, CURLOPT_WRITEDATA, session);
   curl_easy_setopt(session->handle, CURLOPT_PRIVATE, session);
   curl_easy_setopt(session->handle, CURLOPT_ERRORBUFFER, session->errorBuffer);
@@ -263,8 +263,8 @@ const int CurlInitializer::init = [] {
   uv_timer_init(uv_default_loop(), &uvTimeout);
 
   curlMultiHandle = curl_multi_init();
-  curl_multi_setopt(curlMultiHandle, CURLMOPT_SOCKETFUNCTION, handle_socket);
-  curl_multi_setopt(curlMultiHandle, CURLMOPT_TIMERFUNCTION, start_timeout);
+  curl_multi_setopt(curlMultiHandle, CURLMOPT_SOCKETFUNCTION, curl_handleSocket);
+  curl_multi_setopt(curlMultiHandle, CURLMOPT_TIMERFUNCTION, curl_startTimeout);
 
   return 0;
 }();

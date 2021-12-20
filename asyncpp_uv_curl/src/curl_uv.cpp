@@ -209,7 +209,10 @@ void execute(CurlRequest&& request, CurlCompletedCb completedCb) {
   fill_request(session->handle, session->request);
 
   CURLMcode c = curl_multi_add_handle(curlMultiHandle, session->handle);
-  if (c != CURLM_OK) throw std::runtime_error("curl add handle error");
+  if (c != CURLM_OK) {
+    delete session;
+    throw std::runtime_error("curl add handle error");
+  }
 }
 
 void CurlRequest::addHeader(const std::string_view& name, const std::string_view& value) {

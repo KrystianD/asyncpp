@@ -71,12 +71,13 @@ template<typename T>
 struct promise_t;
 
 template<typename T>
-struct task {
-  // promise_type declaration required by C++20 coroutines
-  typedef promise_t<T> promise_type;
-
+class task {
   std::shared_ptr<awaitable_state<T>> _state;
   std::shared_ptr<void> _customState;
+
+ public:
+  // promise_type declaration required by C++20 coroutines
+  typedef promise_t<T> promise_type;
 
   task() = default;
 
@@ -107,12 +108,13 @@ struct task {
 };
 
 template<>
-struct task<void> {
-  // promise_type declaration required by C++20 coroutines
-  typedef promise_t<void> promise_type;
-
+class task<void> {
   std::shared_ptr<awaitable_state<void>> _state;
   std::shared_ptr<void> _customState;
+
+ public:
+  // promise_type declaration required by C++20 coroutines
+  typedef promise_t<void> promise_type;
 
   task() = default;
 

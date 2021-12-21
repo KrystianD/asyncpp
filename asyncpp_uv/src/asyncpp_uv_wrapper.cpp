@@ -8,7 +8,9 @@ void uvCloseDelete(void* handle) {
   uv_close((uv_handle_t*)handle, [](uv_handle_t* handleInner) { delete handleInner; });
 }
 
-void uvTimerStart(uv_loop_t* loop, uint64_t timeoutMs, const TimerCallback& cb) {
+void uvTimerStart(uint64_t timeoutMs, const TimerCallback& cb, uv_loop_t* loop) {
+  if (loop == nullptr) loop = uv_default_loop();
+
   uv_timer_t* handle = new uv_timer_t();
   handle->data = new TimerCallback(cb);
 

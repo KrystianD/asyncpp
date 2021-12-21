@@ -6,6 +6,9 @@ target_link_libraries(example_readme asyncpp_uv)
 add_executable(example_sleep example_sleep.cpp)
 target_link_libraries(example_sleep asyncpp_uv)
 
+add_executable(example_timer example_timer.cpp)
+target_link_libraries(example_timer asyncpp_uv)
+
 add_executable(example_then example_then.cpp)
 target_link_libraries(example_then asyncpp_uv)
 

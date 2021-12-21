@@ -1,5 +1,5 @@
 add_library(asyncpp_uv STATIC
-        src/asyncpp_uv_wrapper.cpp
+        src/asyncpp_uv_timer.cpp
         src/asyncpp_uv_sleep.cpp
         )
 target_link_libraries(asyncpp_uv PUBLIC asyncpp -luv)

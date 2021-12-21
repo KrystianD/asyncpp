@@ -6,7 +6,7 @@
 #include <functional>
 #include <memory>
 
-namespace asyncpp_uv::wrapper {
+namespace asyncpp_uv::timer {
 using TimerCallback = std::function<void()>;
 
 class TimerHandle {
@@ -27,4 +27,4 @@ class TimerHandle {
 };
 
 std::shared_ptr<TimerHandle> uvTimerStart(uint64_t timeoutMs, const TimerCallback& cb, uv_loop_t* loop = nullptr);
-}  // namespace asyncpp_uv::wrapper
+}  // namespace asyncpp_uv::timer

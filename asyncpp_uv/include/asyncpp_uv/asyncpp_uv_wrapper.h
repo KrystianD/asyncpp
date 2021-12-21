@@ -6,5 +6,6 @@
 #include <functional>
 
 namespace asyncpp_uv::wrapper {
-void uvTimerStart(uv_loop_t* loop, uint64_t timeoutMs, const std::function<void()>& cb);
-}
+using TimerCallback = std::function<void()>;
+void uvTimerStart(uv_loop_t* loop, uint64_t timeoutMs, const TimerCallback& cb);
+}  // namespace asyncpp_uv::wrapper

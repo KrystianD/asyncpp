@@ -3,20 +3,17 @@ set(CMAKE_CXX_STANDARD 20)
 add_executable(example_readme example_readme.cpp)
 target_link_libraries(example_readme asyncpp_uv)
 
-add_executable(example1_sleep example1_sleep.cpp)
-target_link_libraries(example1_sleep asyncpp_uv)
+add_executable(example_sleep example_sleep.cpp)
+target_link_libraries(example_sleep asyncpp_uv)
 
-add_executable(example2_then example2_then.cpp)
-target_link_libraries(example2_then asyncpp_uv)
+add_executable(example_then example_then.cpp)
+target_link_libraries(example_then asyncpp_uv)
 
-add_executable(example3_curl example3_curl.cpp)
-target_link_libraries(example3_curl asyncpp_uv_curl)
+add_executable(example_curl example_curl.cpp)
+target_link_libraries(example_curl asyncpp_uv_curl)
 
-add_executable(example4_curl_sync example4_curl_sync.cpp)
-target_link_libraries(example4_curl_sync asyncpp_uv_curl)
-
-add_executable(example3_tcp example3_tcp.cpp)
-target_link_libraries(example3_tcp asyncpp_uv -lcrypto -lssl)
+add_executable(example_curl_sync example_curl_sync.cpp)
+target_link_libraries(example_curl_sync asyncpp_uv_curl)
 
 add_executable(example4_ws example4_ws.cpp)
 target_link_libraries(example4_ws asyncpp_uv -lcrypto -lssl)

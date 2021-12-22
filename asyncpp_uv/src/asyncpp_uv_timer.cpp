@@ -10,6 +10,16 @@ void uvCloseDelete(void* handle) {
 
 using TimerDataHandleSPtr = std::shared_ptr<TimerHandle>;
 
+void timerCb(uv_timer_t* uvHandle) {
+  TimerDataHandleSPtr* timerHandleInner = (TimerDataHandleSPtr*)uvHandle->data;
+  (*timerHandleInner)->callback();
+  (*timerHandleInner)->handle = nullptr;
+  delete timerHandleInner;
+
+  uv_timer_stop(uvHandle);
+  uvCloseDelete(uvHandle);
+}
+
 void TimerHandle::cancel() {
   if (this->handle == nullptr) return;
 
@@ -34,18 +44,7 @@ std::shared_ptr<TimerHandle> uvTimerStart(uint64_t timeoutMs, const TimerCallbac
   uvHandle->data = new TimerDataHandleSPtr(timerHandle);
 
   uv_timer_init(loop, uvHandle);
-  uv_timer_start(
-      uvHandle,
-      [](uv_timer_t* uvHandleInner) {
-        TimerDataHandleSPtr* timerHandleInner = (TimerDataHandleSPtr*)uvHandleInner->data;
-        (*timerHandleInner)->callback();
-        (*timerHandleInner)->handle = nullptr;
-        delete timerHandleInner;
-
-        uv_timer_stop(uvHandleInner);
-        uvCloseDelete(uvHandleInner);
-      },
-      timeoutMs, 0);
+  uv_timer_start(uvHandle, timerCb, timeoutMs, 0);
 
   return timerHandle;
 }

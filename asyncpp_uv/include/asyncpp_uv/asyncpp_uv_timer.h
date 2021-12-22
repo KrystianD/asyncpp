@@ -23,7 +23,7 @@ class TimerHandle {
 
   void cancel();
 
-  friend std::shared_ptr<TimerHandle> uvTimerStart(uint64_t timeoutMs, const TimerCallback& cb, uv_loop_t* loop);
+  friend void timerCb(uv_timer_t* uvHandle);
 };
 
 std::shared_ptr<TimerHandle> uvTimerStart(uint64_t timeoutMs, const TimerCallback& cb, uv_loop_t* loop = nullptr);

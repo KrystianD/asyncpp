@@ -45,6 +45,13 @@ void TimerHandle::restart(uint64_t newTimeoutMs) {
   uv_timer_start(uvHandle, timerCb, newTimeoutMs, 0);
 }
 
+bool TimerHandle::isRunning() {
+  if (this->handle == nullptr) return false;
+
+  uv_timer_t* uvHandle = (uv_timer_t*)this->handle;
+  return uv_is_active((uv_handle_t*)uvHandle);
+}
+
 std::shared_ptr<TimerHandle> uvTimerStart(uint64_t timeoutMs, const TimerCallback& cb, uv_loop_t* loop) {
   if (loop == nullptr) loop = uv_default_loop();
 

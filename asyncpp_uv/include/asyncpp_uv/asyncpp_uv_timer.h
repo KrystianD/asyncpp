@@ -28,6 +28,8 @@ class TimerHandle {
   void restart();
   void restart(uint64_t newTimeoutMs);
 
+  bool isRunning();
+
   friend void timerCb(uv_timer_t* uvHandle);
 };
 

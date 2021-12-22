@@ -17,6 +17,16 @@ int main() {
     asyncpp_uv::timer::uvTimerStart(500, []() { printf("done4\n"); });
   });
 
+  auto handle4 = asyncpp_uv::timer::uvTimerStart(1000, []() { printf("done4\n"); });
+  asyncpp_uv::timer::uvTimerStart(500, [handle4]() {
+    handle4->restart();
+    printf("restart\n");
+  });
+  asyncpp_uv::timer::uvTimerStart(1000, [handle4]() {
+    handle4->restart();
+    printf("restart\n");
+  });
+
   uv_run(uv_default_loop(), UV_RUN_DEFAULT);
   return 0;
 }

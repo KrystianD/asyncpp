@@ -34,12 +34,23 @@ void TimerHandle::cancel() {
   this->handle = nullptr;
 }
 
+void TimerHandle::restart() { restart(timeoutMs); }
+
+void TimerHandle::restart(uint64_t newTimeoutMs) {
+  if (this->handle == nullptr) throw std::runtime_error("already closed");
+
+  uv_timer_t* uvHandle = (uv_timer_t*)this->handle;
+
+  uv_timer_stop(uvHandle);
+  uv_timer_start(uvHandle, timerCb, newTimeoutMs, 0);
+}
+
 std::shared_ptr<TimerHandle> uvTimerStart(uint64_t timeoutMs, const TimerCallback& cb, uv_loop_t* loop) {
   if (loop == nullptr) loop = uv_default_loop();
 
   uv_timer_t* uvHandle = new uv_timer_t();
 
-  std::shared_ptr<TimerHandle> timerHandle = std::make_shared<TimerHandle>(uvHandle, cb);
+  std::shared_ptr<TimerHandle> timerHandle = std::make_shared<TimerHandle>(uvHandle, timeoutMs, cb);
 
   uvHandle->data = new TimerDataHandleSPtr(timerHandle);
 

@@ -11,6 +11,7 @@ using TimerCallback = std::function<void()>;
 
 class TimerHandle {
   void* handle;
+  uint64_t timeoutMs;
   TimerCallback callback;
 
   TimerHandle(const TimerHandle&) = delete;
@@ -19,9 +20,13 @@ class TimerHandle {
   TimerHandle& operator=(TimerHandle&&) = delete;
 
  public:
-  TimerHandle(void* handle, TimerCallback callback) : handle(handle), callback(callback) {}
+  TimerHandle(void* handle, uint64_t timeoutMs, TimerCallback callback)
+      : handle(handle), timeoutMs(timeoutMs), callback(callback) {}
 
   void cancel();
+
+  void restart();
+  void restart(uint64_t newTimeoutMs);
 
   friend void timerCb(uv_timer_t* uvHandle);
 };

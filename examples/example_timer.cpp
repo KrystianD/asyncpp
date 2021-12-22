@@ -27,6 +27,15 @@ int main() {
     printf("restart\n");
   });
 
+  auto loop = [handle4]() -> task<void> {
+    for (int i = 0; i < 5; i++) {
+      printf("check, timer4: %d\n", handle4->isRunning());
+      co_await uvSleep(800);
+    }
+  };
+
+  loop();
+
   uv_run(uv_default_loop(), UV_RUN_DEFAULT);
   return 0;
 }

@@ -12,8 +12,8 @@ using TimerDataHandleSPtr = std::shared_ptr<TimerHandle>;
 
 void timerCb(uv_timer_t* uvHandle) {
   TimerDataHandleSPtr* timerHandleInner = (TimerDataHandleSPtr*)uvHandle->data;
-  (*timerHandleInner)->callback();
   (*timerHandleInner)->handle = nullptr;
+  (*timerHandleInner)->callback();
   delete timerHandleInner;
 
   uv_timer_stop(uvHandle);

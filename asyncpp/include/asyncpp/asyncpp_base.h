@@ -22,10 +22,18 @@ struct future_exception : std::exception {
 struct awaitable_state_base {
   std::function<void(void)> _coro;
   bool _ready = false;
+  std::exception_ptr _exception;
 
   awaitable_state_base() = default;
   awaitable_state_base(awaitable_state_base&&) = delete;
   awaitable_state_base(const awaitable_state_base&) = delete;
+
+  ~awaitable_state_base() {
+    if (_exception) {
+      // throw the saved exception if not awaited
+      rethrow_exception(_exception);
+    }
+  }
 
   void set_coroutine_callback(const std::function<void(void)>& cb) {
     // Test to make sure nothing else is waiting on this future.
@@ -33,12 +41,19 @@ struct awaitable_state_base {
     _coro = cb;
   }
 
-  void set_value() {
+  void continue_coroutine() {
     // Set all members first as calling coroutine may reset stuff here.
     _ready = true;
     auto coro = _coro;
     _coro = nullptr;
     if (coro != nullptr) coro();
+  }
+
+  void set_value() { continue_coroutine(); }
+
+  void set_exception(const std::exception_ptr& exception_ptr) {
+    _exception = exception_ptr;
+    continue_coroutine();
   }
 
   [[nodiscard]] bool ready() const { return _ready; }
@@ -93,7 +108,13 @@ class task {
   task(task&&) noexcept = default;
   task& operator=(task&&) noexcept = default;
 
-  T await_resume() const { return std::move(_state->get_value()); }
+  T await_resume() const {
+    if (_state->_exception) {
+      std::exception_ptr exc = std::move(_state->_exception);
+      std::rethrow_exception(exc);
+    }
+    return std::move(_state->get_value());
+  }
 
   [[nodiscard]] bool await_ready() const { return _state->_ready; }
 
@@ -130,7 +151,12 @@ class task<void> {
   task(task&&) noexcept = default;
   task& operator=(task&&) noexcept = default;
 
-  void await_resume() const {}
+  void await_resume() const {
+    if (_state->_exception) {
+      std::exception_ptr exc = std::move(_state->_exception);
+      std::rethrow_exception(exc);
+    }
+  }
 
   [[nodiscard]] bool await_ready() const { return _state->_ready; }
 
@@ -166,7 +192,7 @@ struct promise_t {
 
   void return_value(const T& val) { state->set_value(val); }
 
-  [[noreturn]] void unhandled_exception() { std::terminate(); }
+  void unhandled_exception() { state->set_exception(std::current_exception()); }
 };
 
 template<>
@@ -187,8 +213,8 @@ struct promise_t<void> {
   [[nodiscard]] std::suspend_never initial_suspend() const noexcept { return {}; }
   [[nodiscard]] std::suspend_never final_suspend() const noexcept { return {}; }
 
-  void return_void() { state->set_value(); }
+  void return_void() { state->continue_coroutine(); }
 
-  [[noreturn]] void unhandled_exception() { std::terminate(); }
+  void unhandled_exception() { state->set_exception(std::current_exception()); }
 };
 }  // namespace asyncpp

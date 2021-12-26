@@ -17,3 +17,6 @@ target_link_libraries(example_curl asyncpp_uv_curl)
 
 add_executable(example_curl_sync example_curl_sync.cpp)
 target_link_libraries(example_curl_sync asyncpp_uv_curl)
+
+add_executable(example_exception example_exception.cpp)
+target_link_libraries(example_exception asyncpp_uv)

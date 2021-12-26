@@ -88,7 +88,7 @@ struct promise_t;
 template<typename T>
 class task {
   std::shared_ptr<awaitable_state<T>> _state;
-  std::shared_ptr<void> _customState;
+  std::shared_ptr<void> _custom_state;
 
  public:
   // promise_type declaration required by C++20 coroutines
@@ -99,7 +99,7 @@ class task {
   explicit task(std::shared_ptr<awaitable_state<T>>& state) : _state(state) {}
 
   task(std::shared_ptr<awaitable_state<T>>& state, std::shared_ptr<void> custom_state)
-      : _state(state), _customState(std::move(custom_state)) {}
+      : _state(state), _custom_state(std::move(custom_state)) {}
 
   // not copyable
   task(const task&) = delete;
@@ -131,7 +131,7 @@ class task {
 template<>
 class task<void> {
   std::shared_ptr<awaitable_state<void>> _state;
-  std::shared_ptr<void> _customState;
+  std::shared_ptr<void> _custom_state;
 
  public:
   // promise_type declaration required by C++20 coroutines
@@ -142,7 +142,7 @@ class task<void> {
   explicit task(std::shared_ptr<awaitable_state<void>>& state) : _state(state) {}
 
   task(std::shared_ptr<awaitable_state<void>>& state, std::shared_ptr<void> custom_state)
-      : _state(state), _customState(std::move(custom_state)) {}
+      : _state(state), _custom_state(std::move(custom_state)) {}
 
   // not copyable
   task(const task&) = delete;

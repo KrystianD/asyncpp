@@ -26,7 +26,7 @@ template<typename T, typename TState>
 
   std::shared_ptr<TState> customState = std::make_shared<TState>();
 
-  ResolveResultCb<T> resolve = [state](const T& value) { state->set_value(value); };
+  ResolveResultCb<T> resolve = [state](T&& value) { state->set_value(value); };
   Rejecter reject(state);
 
   cb(*customState, resolve, reject);
@@ -40,7 +40,7 @@ template<typename T, typename TState>
 
   std::shared_ptr<TState> customState = std::make_shared<TState>();
 
-  ResolveResultCb<T> resolve = [state](const T& value) { state->set_value(value); };
+  ResolveResultCb<T> resolve = [state](T&& value) { state->set_value(value); };
 
   cb(*customState, resolve);
 

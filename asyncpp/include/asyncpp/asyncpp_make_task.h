@@ -9,7 +9,7 @@ using ResolveResultCb = std::function<void(T&&)>;
 using ResolveVoidCb = std::function<void()>;
 
 template<typename T, typename TState>
-[[maybe_unused]] task<T> makeTask(const std::function<void(TState&, ResolveResultCb<T>&)>& cb) {
+[[maybe_unused]] task<T> makeTaskWithState(const std::function<void(TState&, ResolveResultCb<T>&)>& cb) {
   auto state = std::make_shared<awaitable_state<T>>();
 
   std::shared_ptr<TState> customState = std::make_shared<TState>();
@@ -22,7 +22,7 @@ template<typename T, typename TState>
 }
 
 template<typename TState>
-[[maybe_unused]] task<void> makeTask(const std::function<void(TState&, ResolveVoidCb&)>& cb) {
+[[maybe_unused]] task<void> makeTaskWithState(const std::function<void(TState&, ResolveVoidCb&)>& cb) {
   auto state = std::make_shared<awaitable_state<void>>();
 
   std::shared_ptr<TState> customState = std::make_shared<TState>();

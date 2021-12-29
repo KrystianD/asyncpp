@@ -123,10 +123,18 @@ class task {
 
   void then(const std::function<void(T)>& resume_cb) {
     auto state = _state;
-    if (await_ready())
-      resume_cb(std::move(state->get_value()));
-    else
-      _state->set_coroutine_callback([state, resume_cb]() { resume_cb(std::move(state->get_value())); });
+
+    if (await_ready()) {
+      if (!state->_exception) {
+        resume_cb(std::move(state->get_value()));
+      }
+    } else {
+      state->set_coroutine_callback([state, resume_cb]() {
+        if (!state->_exception) {
+          resume_cb(std::move(state->get_value()));
+        }
+      });
+    }
   }
 };
 
@@ -164,11 +172,20 @@ class task<void> {
 
   void await_suspend(std::coroutine_handle<> resume_cb) { _state->set_coroutine_callback(resume_cb); }
 
-  void then(const std::function<void(void)>& resume_cb) {
-    if (await_ready())
-      resume_cb();
-    else
-      _state->set_coroutine_callback(resume_cb);
+  void then(const std::function<void()>& resume_cb) {
+    auto state = _state;
+
+    if (await_ready()) {
+      if (!state->_exception) {
+        resume_cb();
+      }
+    } else {
+      state->set_coroutine_callback([state, resume_cb]() {
+        if (!state->_exception) {
+          resume_cb();
+        }
+      });
+    }
   }
 };
 

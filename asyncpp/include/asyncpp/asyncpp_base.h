@@ -136,6 +136,28 @@ class task {
       });
     }
   }
+
+  void then(const std::function<void(T)>& resume_cb, const std::function<void(std::exception_ptr&)>& error_cb) {
+    auto state = _state;
+
+    if (await_ready()) {
+      if (!state->_exception) {
+        resume_cb(std::move(state->get_value()));
+      } else {
+        error_cb(state->_exception);
+        state->_exception = std::move(std::exception_ptr());  // clear error
+      }
+    } else {
+      state->set_coroutine_callback([state, resume_cb, error_cb]() {
+        if (!state->_exception) {
+          resume_cb(std::move(state->get_value()));
+        } else {
+          error_cb(state->_exception);
+          state->_exception = std::move(std::exception_ptr());  // clear error
+        }
+      });
+    }
+  }
 };
 
 template<>
@@ -183,6 +205,28 @@ class task<void> {
       state->set_coroutine_callback([state, resume_cb]() {
         if (!state->_exception) {
           resume_cb();
+        }
+      });
+    }
+  }
+
+  void then(const std::function<void()>& resume_cb, const std::function<void(std::exception_ptr&)>& error_cb) {
+    auto state = _state;
+
+    if (await_ready()) {
+      if (!state->_exception) {
+        resume_cb();
+      } else {
+        error_cb(state->_exception);
+        state->_exception = std::move(std::exception_ptr());  // clear error
+      }
+    } else {
+      state->set_coroutine_callback([state, resume_cb, error_cb]() {
+        if (!state->_exception) {
+          resume_cb();
+        } else {
+          error_cb(state->_exception);
+          state->_exception = std::move(std::exception_ptr());  // clear error
         }
       });
     }

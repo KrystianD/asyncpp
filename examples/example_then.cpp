@@ -5,12 +5,17 @@ using namespace std;
 using namespace asyncpp;
 using namespace asyncpp_uv;
 
-task<int> test() { co_return 5; }
+task<int> test() {
+  co_await uvSleep(1000);
+  co_return 5;
+}
+
+void run() {
+  test().then([](int r) { printf("then1 %d\n", r); });
+}
 
 int main() {
-  uvSleep(1000).then([]() { printf("then1\n"); });
-
-  test().then([](int x) { printf("val %d\n", x); });
+  run();
 
   uv_run(uv_default_loop(), UV_RUN_DEFAULT);
   return 0;

@@ -121,10 +121,11 @@ class task {
   void await_suspend(std::coroutine_handle<> resume_cb) { _state->set_coroutine_callback(resume_cb); }
 
   void then(const std::function<void(T)>& resume_cb) {
+    auto state = _state;
     if (await_ready())
       resume_cb(await_resume());
     else
-      _state->set_coroutine_callback([this, resume_cb]() { resume_cb(await_resume()); });
+      _state->set_coroutine_callback([state, resume_cb]() { resume_cb(std::move(state->get_value())); });
   }
 };
 

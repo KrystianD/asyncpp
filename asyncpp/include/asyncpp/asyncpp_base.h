@@ -30,6 +30,7 @@ struct awaitable_state_base {
 
   ~awaitable_state_base() {
     if (_exception) {
+      fprintf(stderr, "Unhandled promise exception:\n");
       // throw the saved exception if not awaited
       rethrow_exception(_exception);
     }
@@ -123,7 +124,7 @@ class task {
   void then(const std::function<void(T)>& resume_cb) {
     auto state = _state;
     if (await_ready())
-      resume_cb(await_resume());
+      resume_cb(std::move(state->get_value()));
     else
       _state->set_coroutine_callback([state, resume_cb]() { resume_cb(std::move(state->get_value())); });
   }

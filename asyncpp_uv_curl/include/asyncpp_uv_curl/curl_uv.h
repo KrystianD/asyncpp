@@ -5,6 +5,7 @@
 #include <functional>
 #include <string>
 #include <utility>
+#include <chrono>
 
 namespace curl_uv {
 struct CurlSession;
@@ -18,6 +19,8 @@ enum class Method {
 class CurlRequest {
   Method method;
   std::string url;
+  std::chrono::milliseconds connectTimeout = std::chrono::milliseconds(300);
+  std::chrono::milliseconds timeout = std::chrono::milliseconds(60);
   curl_slist* slist = nullptr;
 
   // POST
@@ -37,6 +40,12 @@ class CurlRequest {
   CurlRequest& operator=(CurlRequest&&) = default;
 
   void addHeader(const std::string_view& name, const std::string_view& value);
+
+  void setConnectTimeout(uint32_t timeout_ms) { this->connectTimeout = std::chrono::milliseconds(timeout_ms); }
+  void setConnectTimeout(std::chrono::milliseconds timeout) { this->connectTimeout = timeout; }
+
+  void setTimeout(uint32_t timeout_ms) { this->timeout = std::chrono::milliseconds(timeout_ms); }
+  void setTimeout(std::chrono::milliseconds timeout) { this->timeout = timeout; }
 
   void setPayload(const std::string& data) { this->payload = data; }
   void setPayload(std::string&& data) { this->payload = std::move(data); }

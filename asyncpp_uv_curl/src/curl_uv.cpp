@@ -162,7 +162,8 @@ CurlRequest delete_(const std::string& url) { return {Method::DELETE, url}; }
 
 void fillRequest(CURL* curl, const CurlRequest& request) {
   curl_easy_setopt(curl, CURLOPT_URL, request.url.c_str());
-  curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, 2000L);
+  curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT_MS, (long)request.connectTimeout.count());
+  curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, (long)request.timeout.count());
   if (request.slist != nullptr) curl_easy_setopt(curl, CURLOPT_HTTPHEADER, request.slist);
 
   switch (request.method) {

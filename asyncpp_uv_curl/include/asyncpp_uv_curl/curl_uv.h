@@ -58,8 +58,8 @@ class CurlResponse {
   std::vector<uint8_t> buffer;
   std::string error;
 
-  [[nodiscard]] std::string_view as_string() const { return std::string_view((char*)buffer.data(), buffer.size()); }
-  [[nodiscard]] std::string to_string() const { return std::string(as_string()); }
+  [[nodiscard]] std::string_view asString() const { return std::string_view((char*)buffer.data(), buffer.size()); }
+  [[nodiscard]] std::string toString() const { return std::string(asString()); }
 };
 
 typedef std::function<void(CurlResponse&& response)> CurlCompletedCb;

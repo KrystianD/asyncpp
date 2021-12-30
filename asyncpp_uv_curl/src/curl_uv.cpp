@@ -183,11 +183,11 @@ void fillRequest(CURL* curl, const CurlRequest& request) {
 }
 
 void fillResponse(CurlSession* session, CURLcode result) {
-  long http_code = 0;
-  curl_easy_getinfo(session->handle, CURLINFO_RESPONSE_CODE, &http_code);
+  long statusCode = 0;
+  curl_easy_getinfo(session->handle, CURLINFO_RESPONSE_CODE, &statusCode);
 
   session->response.result = result;
-  session->response.httpCode = http_code;
+  session->response.statusCode = statusCode;
 
   if (result != CURLE_OK) session->response.error = session->errorBuffer;
 }

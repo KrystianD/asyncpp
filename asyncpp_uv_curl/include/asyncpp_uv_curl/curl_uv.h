@@ -54,7 +54,7 @@ class CurlResponse {
   CurlResponse& operator=(CurlResponse&&) = default;
 
   CURLcode result;
-  long httpCode;
+  long statusCode;
   std::vector<uint8_t> buffer;
   std::string error;
 

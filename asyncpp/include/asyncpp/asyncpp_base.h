@@ -36,16 +36,16 @@ struct awaitable_state_base {
     }
   }
 
-  void set_coroutine_callback(const std::function<void(void)>& cb) {
+  void set_coroutine_callback(std::function<void(void)> cb) {
     // Test to make sure nothing else is waiting on this future.
     assert(((cb == nullptr) || (_coro == nullptr)) && "This future is already being awaited.");
-    _coro = cb;
+    _coro = std::move(cb);
   }
 
   void continue_coroutine() {
     // Set all members first as calling coroutine may reset stuff here.
     _ready = true;
-    auto coro = _coro;
+    auto coro = std::move(_coro);
     _coro = nullptr;
     if (coro != nullptr) coro();
   }
@@ -97,10 +97,10 @@ class task {
 
   task() = default;
 
-  explicit task(std::shared_ptr<awaitable_state<T>>& state) : _state(state) {}
+  explicit task(std::shared_ptr<awaitable_state<T>> state) : _state(std::move(state)) {}
 
-  task(std::shared_ptr<awaitable_state<T>>& state, std::shared_ptr<void> custom_state)
-      : _state(state), _custom_state(std::move(custom_state)) {}
+  task(std::shared_ptr<awaitable_state<T>> state, std::shared_ptr<void> custom_state)
+      : _state(std::move(state)), _custom_state(std::move(custom_state)) {}
 
   // not copyable
   task(const task&) = delete;
@@ -121,7 +121,7 @@ class task {
 
   void await_suspend(std::coroutine_handle<> resume_cb) { _state->set_coroutine_callback(resume_cb); }
 
-  void then(const std::function<void(T)>& resume_cb) {
+  void then(std::function<void(T)> resume_cb) {
     auto state = _state;
 
     if (await_ready()) {
@@ -129,7 +129,7 @@ class task {
         resume_cb(std::move(state->get_value()));
       }
     } else {
-      state->set_coroutine_callback([state, resume_cb]() {
+      state->set_coroutine_callback([state = std::move(state), resume_cb = std::move(resume_cb)]() {
         if (!state->_exception) {
           resume_cb(std::move(state->get_value()));
         }
@@ -137,7 +137,7 @@ class task {
     }
   }
 
-  void then(const std::function<void(T)>& resume_cb, const std::function<void(std::exception_ptr&)>& error_cb) {
+  void then(std::function<void(T)> resume_cb, std::function<void(std::exception_ptr&)> error_cb) {
     auto state = _state;
 
     if (await_ready()) {
@@ -148,7 +148,7 @@ class task {
         state->_exception = std::move(std::exception_ptr());  // clear error
       }
     } else {
-      state->set_coroutine_callback([state, resume_cb, error_cb]() {
+      state->set_coroutine_callback([state, resume_cb = std::move(resume_cb), error_cb = std::move(error_cb)]() {
         if (!state->_exception) {
           resume_cb(std::move(state->get_value()));
         } else {
@@ -171,10 +171,10 @@ class task<void> {
 
   task() = default;
 
-  explicit task(std::shared_ptr<awaitable_state<void>>& state) : _state(state) {}
+  explicit task(std::shared_ptr<awaitable_state<void>> state) : _state(std::move(state)) {}
 
-  task(std::shared_ptr<awaitable_state<void>>& state, std::shared_ptr<void> custom_state)
-      : _state(state), _custom_state(std::move(custom_state)) {}
+  task(std::shared_ptr<awaitable_state<void>> state, std::shared_ptr<void> custom_state)
+      : _state(std::move(state)), _custom_state(std::move(custom_state)) {}
 
   // not copyable
   task(const task&) = delete;
@@ -194,7 +194,7 @@ class task<void> {
 
   void await_suspend(std::coroutine_handle<> resume_cb) { _state->set_coroutine_callback(resume_cb); }
 
-  void then(const std::function<void()>& resume_cb) {
+  void then(std::function<void()> resume_cb) {
     auto state = _state;
 
     if (await_ready()) {
@@ -202,7 +202,7 @@ class task<void> {
         resume_cb();
       }
     } else {
-      state->set_coroutine_callback([state, resume_cb]() {
+      state->set_coroutine_callback([state, resume_cb = std::move(resume_cb)]() {
         if (!state->_exception) {
           resume_cb();
         }
@@ -210,7 +210,7 @@ class task<void> {
     }
   }
 
-  void then(const std::function<void()>& resume_cb, const std::function<void(std::exception_ptr&)>& error_cb) {
+  void then(std::function<void()> resume_cb, std::function<void(std::exception_ptr&)> error_cb) {
     auto state = _state;
 
     if (await_ready()) {
@@ -221,7 +221,7 @@ class task<void> {
         state->_exception = std::move(std::exception_ptr());  // clear error
       }
     } else {
-      state->set_coroutine_callback([state, resume_cb, error_cb]() {
+      state->set_coroutine_callback([state, resume_cb = std::move(resume_cb), error_cb = std::move(error_cb)]() {
         if (!state->_exception) {
           resume_cb();
         } else {

@@ -7,7 +7,7 @@ class Rejecter {
   std::shared_ptr<awaitable_state_base> _state;
 
  public:
-  explicit Rejecter(const std::shared_ptr<awaitable_state_base>& state) : _state(state) {}
+  explicit Rejecter(std::shared_ptr<awaitable_state_base>  state) : _state(std::move(state)) {}
 
   template<typename E>
   void operator()(const E& value) const {
@@ -31,7 +31,7 @@ template<typename T, typename TState>
 
   cb(*customState, resolve, reject);
 
-  return task<T>(state, customState);
+  return task<T>(std::move(state), std::move(customState));
 }
 
 template<typename T, typename TState>
@@ -44,7 +44,7 @@ template<typename T, typename TState>
 
   cb(*customState, resolve);
 
-  return task<T>(state, customState);
+  return task<T>(std::move(state), std::move(customState));
 }
 
 template<typename TState>
@@ -58,7 +58,7 @@ template<typename TState>
 
   cb(*customState, resolve, reject);
 
-  return task<void>(state, customState);
+  return task<void>(std::move(state), std::move(customState));
 }
 
 template<typename TState>
@@ -71,7 +71,7 @@ template<typename TState>
 
   cb(*customState, resolve);
 
-  return task<void>(state, customState);
+  return task<void>(std::move(state), std::move(customState));
 }
 
 template<typename T>
@@ -83,7 +83,7 @@ template<typename T>
 
   cb(resolve, reject);
 
-  return task<T>(state);
+  return task<T>(std::move(state));
 }
 
 template<typename T>
@@ -94,7 +94,7 @@ template<typename T>
 
   cb(resolve);
 
-  return task<T>(state);
+  return task<T>(std::move(state));
 }
 
 [[maybe_unused]] static task<void> makeTask(const std::function<void(ResolveVoidCb&, Rejecter&)>& cb) {
@@ -105,7 +105,7 @@ template<typename T>
 
   cb(resolve, reject);
 
-  return task<void>(state);
+  return task<void>(std::move(state));
 }
 
 [[maybe_unused]] static task<void> makeTask(const std::function<void(ResolveVoidCb&)>& cb) {
@@ -115,6 +115,6 @@ template<typename T>
 
   cb(resolve);
 
-  return task<void>(state);
+  return task<void>(std::move(state));
 }
 }  // namespace asyncpp

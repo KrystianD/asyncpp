@@ -1,5 +1,5 @@
 #include <asyncpp/asyncpp.h>
-#include <asyncpp_uv/asyncpp_uv_sleep.h>
+#include <asyncpp_uv/asyncpp_uv.h>
 #include <uv.h>
 
 using namespace std;
@@ -7,7 +7,7 @@ using namespace asyncpp;
 using namespace asyncpp_uv;
 
 task<void> raise() {
-  co_await uvSleep(100);
+  co_await uvSleepAsync(100);
   throw std::runtime_error("test error");
 }
 

@@ -1,5 +1,5 @@
 #include <asyncpp/asyncpp.h>
-#include <asyncpp_uv/asyncpp_uv_sleep.h>
+#include <asyncpp_uv/asyncpp_uv.h>
 #include <uv.h>
 
 using namespace std;
@@ -8,7 +8,7 @@ using namespace asyncpp_uv;
 
 task<void> asyncMain() {
   printf("asyncMain BEGIN\n");
-  co_await uvSleep(1000);
+  co_await uvSleepAsync(1000);
   printf("asyncMain END\n");
 }
 

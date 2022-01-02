@@ -31,7 +31,7 @@ int main() {
   auto loop = [handle4]() -> task<void> {
     for (int i = 0; i < 5; i++) {
       printf("check, timer4: %d\n", handle4->isRunning());
-      co_await uvSleep(800);
+      co_await uvSleepAsync(800);
     }
   };
 

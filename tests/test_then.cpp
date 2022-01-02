@@ -1,4 +1,4 @@
-#include <asyncpp_uv/asyncpp_uv_sleep.h>
+#include <asyncpp_uv/asyncpp_uv.h>
 #include <uv.h>
 
 using namespace std;
@@ -9,37 +9,37 @@ using namespace asyncpp_uv;
 
 // void
 task<void> test_void_ok() {
-  co_await uvSleep(1000);
+  co_await uvSleepAsync(1000);
   co_return;
 }
 
 bool test_void_fail_early_failed = false;
 task<void> test_void_fail_early() {
   throw std::runtime_error("err");
-  co_await uvSleep(1000);
+  co_await uvSleepAsync(1000);
 }
 
 bool test_void_fail_late_failed = false;
 task<void> test_void_fail_late() {
-  co_await uvSleep(1000);
+  co_await uvSleepAsync(1000);
   throw std::runtime_error("err");
 }
 
 // obj
 task<Obj> test_obj_ok() {
-  co_await uvSleep(1000);
+  co_await uvSleepAsync(1000);
   co_return Obj(5);
 }
 
 bool test_obj_fail_early_failed = false;
 task<Obj> test_obj_fail_early() {
   throw std::runtime_error("err");
-  co_await uvSleep(1000);
+  co_await uvSleepAsync(1000);
 }
 
 bool test_obj_fail_late_failed = false;
 task<Obj> test_obj_fail_late() {
-  co_await uvSleep(1000);
+  co_await uvSleepAsync(1000);
   throw std::runtime_error("err");
 }
 

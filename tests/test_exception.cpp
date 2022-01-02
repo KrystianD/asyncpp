@@ -1,5 +1,5 @@
 #include <asyncpp/asyncpp.h>
-#include <asyncpp_uv/asyncpp_uv_sleep.h>
+#include <asyncpp_uv/asyncpp_uv.h>
 
 #include "test.h"
 
@@ -27,14 +27,14 @@ TEST(ExceptionsTest, Rethrow) {
 TEST(ExceptionsTest, ThrowEarly) {
   EXPECT_THROW(runAsync([]() -> task<void> {
                  throw std::runtime_error("error1");
-                 co_await uvSleep(100);
+                 co_await uvSleepAsync(100);
                }),
                std::runtime_error);
 }
 
 TEST(ExceptionsTest, ThrowLate) {
   EXPECT_THROW(runAsync([]() -> task<void> {
-                 co_await uvSleep(100);
+                 co_await uvSleepAsync(100);
                  throw std::runtime_error("error2");
                }),
                std::runtime_error);

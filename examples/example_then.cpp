@@ -1,4 +1,4 @@
-#include <asyncpp_uv/asyncpp_uv_sleep.h>
+#include <asyncpp_uv/asyncpp_uv.h>
 #include <uv.h>
 
 using namespace std;
@@ -6,7 +6,7 @@ using namespace asyncpp;
 using namespace asyncpp_uv;
 
 task<int> test() {
-  co_await uvSleep(1000);
+  co_await uvSleepAsync(1000);
   co_return 5;
 }
 

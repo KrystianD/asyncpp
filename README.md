@@ -11,6 +11,10 @@ Event loop-agnostic implementation of C++20 coroutines (`co_await`/`co_return`).
 
 Provides `makeTask` function which takes a callback with `resolve` and `reject` passed as arguments. Similar to how JavaScript `new Promise` constructor works.
 
+### uvpp
+
+libuv library wrappers for usage with C++ std::function.
+
 ### asyncpp_uv
 
 libuv library wrappers to be used in coroutine-based program.

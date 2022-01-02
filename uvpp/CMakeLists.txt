@@ -1,0 +1,6 @@
+add_library(uvpp STATIC
+        ${CMAKE_CURRENT_LIST_DIR}/src/uvpp_timer.cpp
+        )
+target_link_libraries(uvpp PUBLIC -luv)
+target_include_directories(uvpp PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
+set_property(TARGET uvpp PROPERTY CXX_STANDARD 20)

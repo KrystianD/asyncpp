@@ -6,7 +6,7 @@
 #include <functional>
 #include <memory>
 
-namespace asyncpp_uv::timer {
+namespace uvpp {
 using TimerCallback = std::function<void()>;
 
 class TimerHandle {

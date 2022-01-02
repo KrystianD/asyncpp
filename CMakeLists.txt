@@ -5,6 +5,7 @@ option(BUILD_EXAMPLES "Build examples" OFF)
 option(BUILD_TESTS "Build tests" OFF)
 
 add_subdirectory(asyncpp)
+add_subdirectory(uvpp)
 add_subdirectory(asyncpp_uv)
 add_subdirectory(asyncpp_uv_curl)
 

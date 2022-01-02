@@ -1,9 +1,6 @@
-#include <asyncpp_uv/asyncpp_uv_timer.h>
-#include <uv.h>
+#include <uvpp/uvpp_timer.h>
 
-#include <functional>
-
-namespace asyncpp_uv::timer {
+namespace uvpp {
 void uvCloseDelete(void* handle) {
   uv_close((uv_handle_t*)handle, [](uv_handle_t* handleInner) { delete handleInner; });
 }
@@ -66,4 +63,4 @@ std::shared_ptr<TimerHandle> uvTimerStart(uint64_t timeoutMs, const TimerCallbac
 
   return timerHandle;
 }
-}  // namespace asyncpp_uv::timer
+}  // namespace uvpp

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <uv.h>
 
 #include <chrono>

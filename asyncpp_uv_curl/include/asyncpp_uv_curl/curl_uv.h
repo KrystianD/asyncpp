@@ -19,8 +19,8 @@ enum class Method {
 class CurlRequest {
   Method method;
   std::string url;
-  std::chrono::milliseconds connectTimeout = std::chrono::milliseconds(300);
-  std::chrono::milliseconds timeout = std::chrono::milliseconds(60);
+  std::chrono::milliseconds connectTimeout = std::chrono::seconds(300);
+  std::chrono::milliseconds timeout = std::chrono::seconds(60);
   curl_slist* slist = nullptr;
   bool verbose = false;
 

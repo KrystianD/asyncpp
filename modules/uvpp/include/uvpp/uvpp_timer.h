@@ -34,4 +34,4 @@ class TimerHandle {
 };
 
 std::shared_ptr<TimerHandle> uvTimerStart(uint64_t timeoutMs, const TimerCallback& cb, uv_loop_t* loop = nullptr);
-}  // namespace asyncpp_uv::timer
+}  // namespace uvpp

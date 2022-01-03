@@ -19,6 +19,10 @@ struct future_exception : std::exception {
   explicit future_exception(future_error fe) : _error(fe) {}
 };
 
+struct task_timeout : std::exception {
+  const char* what() const noexcept override { return "task timeout"; }
+};
+
 struct awaitable_state_base {
   std::function<void(void)> _coro;
   bool _ready = false;

@@ -159,6 +159,8 @@ class task {
       });
     }
   }
+
+  void disconnect() { _state->set_coroutine_callback(nullptr); }
 };
 
 template<>
@@ -229,6 +231,8 @@ class task<void> {
       });
     }
   }
+
+  void disconnect() { _state->set_coroutine_callback(nullptr); }
 };
 
 template<typename T>

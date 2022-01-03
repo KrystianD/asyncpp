@@ -23,6 +23,10 @@ struct task_timeout : std::exception {
   const char* what() const noexcept override { return "task timeout"; }
 };
 
+struct task_cancelled : std::exception {
+  const char* what() const noexcept override { return "task cancelled"; }
+};
+
 struct awaitable_state_base {
   std::function<void(void)> _coro;
   bool _ready = false;

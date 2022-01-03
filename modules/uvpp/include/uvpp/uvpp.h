@@ -4,3 +4,4 @@
 #include "uvpp_stream.h"
 #include "uvpp_tcp.h"
 #include "uvpp_timer.h"
+#include "uvpp_dns.h"

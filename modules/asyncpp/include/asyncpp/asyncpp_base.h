@@ -111,8 +111,7 @@ class task {
 
   T await_resume() const {
     if (_state->_exception) {
-      std::exception_ptr exc = std::move(_state->_exception);
-      std::rethrow_exception(exc);
+      std::rethrow_exception(std::move(_state->_exception));
     }
     return std::move(_state->get_value());
   }
@@ -137,23 +136,21 @@ class task {
     }
   }
 
-  void then(std::function<void(T)> resume_cb, std::function<void(std::exception_ptr&)> error_cb) {
+  void then(std::function<void(T)> resume_cb, std::function<void(std::exception_ptr)> error_cb) {
     auto state = _state;
 
     if (await_ready()) {
       if (!state->_exception) {
         resume_cb(std::move(state->get_value()));
       } else {
-        error_cb(state->_exception);
-        state->_exception = std::move(std::exception_ptr());  // clear error
+        error_cb(std::move(state->_exception));
       }
     } else {
       state->set_coroutine_callback([state, resume_cb = std::move(resume_cb), error_cb = std::move(error_cb)]() {
         if (!state->_exception) {
           resume_cb(std::move(state->get_value()));
         } else {
-          error_cb(state->_exception);
-          state->_exception = std::move(std::exception_ptr());  // clear error
+          error_cb(std::move(state->_exception));
         }
       });
     }
@@ -185,8 +182,7 @@ class task<void> {
 
   void await_resume() const {
     if (_state->_exception) {
-      std::exception_ptr exc = std::move(_state->_exception);
-      std::rethrow_exception(exc);
+      std::rethrow_exception(std::move(_state->_exception));
     }
   }
 
@@ -210,23 +206,21 @@ class task<void> {
     }
   }
 
-  void then(std::function<void()> resume_cb, std::function<void(std::exception_ptr&)> error_cb) {
+  void then(std::function<void()> resume_cb, std::function<void(std::exception_ptr)> error_cb) {
     auto state = _state;
 
     if (await_ready()) {
       if (!state->_exception) {
         resume_cb();
       } else {
-        error_cb(state->_exception);
-        state->_exception = std::move(std::exception_ptr());  // clear error
+        error_cb(std::move(state->_exception));
       }
     } else {
       state->set_coroutine_callback([state, resume_cb = std::move(resume_cb), error_cb = std::move(error_cb)]() {
         if (!state->_exception) {
           resume_cb();
         } else {
-          error_cb(state->_exception);
-          state->_exception = std::move(std::exception_ptr());  // clear error
+          error_cb(std::move(state->_exception));
         }
       });
     }

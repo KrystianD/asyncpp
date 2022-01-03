@@ -47,7 +47,7 @@ void run() {
   test_void_ok().then([]() { printf("test_void_ok\n"); });
 
   test_void_fail_early().then([]() { printf("test_void_fail_early\n"); },
-                              [](std::exception_ptr& ptr) {
+                              [](std::exception_ptr ptr) {
                                 try {
                                   std::rethrow_exception(ptr);
                                 } catch (std::runtime_error& e) {
@@ -56,7 +56,7 @@ void run() {
                               });
 
   test_void_fail_late().then([]() { printf("test_void_fail_late\n"); },
-                             [](std::exception_ptr& ptr) {
+                             [](std::exception_ptr ptr) {
                                try {
                                  std::rethrow_exception(ptr);
                                } catch (std::runtime_error& e) {
@@ -67,7 +67,7 @@ void run() {
   test_obj_ok().then([](Obj o) { printf("test_obj_ok %d\n", o.v); });
 
   test_obj_fail_early().then([](Obj o) { printf("test_obj_fail_early %d\n", o.v); },
-                             [](std::exception_ptr& ptr) {
+                             [](std::exception_ptr ptr) {
                                try {
                                  std::rethrow_exception(ptr);
                                } catch (std::runtime_error& e) {
@@ -76,7 +76,7 @@ void run() {
                              });
 
   test_obj_fail_late().then([](Obj o) { printf("test_obj_fail_late %d\n", o.v); },
-                            [](std::exception_ptr& ptr) {
+                            [](std::exception_ptr ptr) {
                               try {
                                 std::rethrow_exception(ptr);
                               } catch (std::runtime_error& e) {

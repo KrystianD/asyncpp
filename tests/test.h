@@ -19,3 +19,13 @@ static void runAsync(const std::function<asyncpp::task<void>()> &f) {
   sem.acquire();
   if (excPtr) std::rethrow_exception(excPtr);
 }
+
+static void EXPECT_TIME_ASYNC(int timeMs, const std::function<asyncpp::task<void>()> &f) {
+  auto start = std::chrono::high_resolution_clock::now();
+  runAsync(f);
+  auto finish = std::chrono::high_resolution_clock::now();
+
+  int ms = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start).count();
+
+  EXPECT_NEAR(ms, timeMs, 20);
+}

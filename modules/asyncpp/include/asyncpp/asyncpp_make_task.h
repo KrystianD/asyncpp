@@ -7,12 +7,15 @@ class Rejecter {
   std::shared_ptr<awaitable_state_base> _state;
 
  public:
-  explicit Rejecter(std::shared_ptr<awaitable_state_base>  state) : _state(std::move(state)) {}
+  Rejecter() = default;
+  explicit Rejecter(std::shared_ptr<awaitable_state_base> state) : _state(std::move(state)) {}
 
   template<typename E>
   void operator()(const E& value) const {
     _state->set_exception(std::make_exception_ptr(value));
   }
+
+  void operator()(std::exception_ptr exc_ptr) const { _state->set_exception(exc_ptr); }
 };
 
 template<typename T>

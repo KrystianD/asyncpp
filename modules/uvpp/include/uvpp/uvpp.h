@@ -5,3 +5,4 @@
 #include "uvpp_tcp.h"
 #include "uvpp_timer.h"
 #include "uvpp_dns.h"
+#include "uvpp_async.h"

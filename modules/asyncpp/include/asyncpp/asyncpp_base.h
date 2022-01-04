@@ -31,6 +31,7 @@ struct awaitable_state_base {
   std::function<void(void)> _coro;
   bool _ready = false;
   std::exception_ptr _exception;
+  std::shared_ptr<void> _custom_data;
 
   awaitable_state_base() = default;
   awaitable_state_base(awaitable_state_base&&) = delete;
@@ -66,6 +67,8 @@ struct awaitable_state_base {
   }
 
   [[nodiscard]] bool ready() const { return _ready; }
+
+  void set_data(std::shared_ptr<void> data) { _custom_data = data; }
 };
 
 template<typename TValue>
@@ -165,6 +168,8 @@ class task {
   }
 
   void disconnect() { _state->set_coroutine_callback(nullptr); }
+
+  void set_internal_data(std::shared_ptr<void> data) { _state->set_data(data); }
 };
 
 template<>
@@ -237,6 +242,8 @@ class task<void> {
   }
 
   void disconnect() { _state->set_coroutine_callback(nullptr); }
+
+  void set_internal_data(std::shared_ptr<void> data) { _state->set_data(data); }
 };
 
 template<typename T>

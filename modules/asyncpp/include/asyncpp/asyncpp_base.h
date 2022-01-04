@@ -293,4 +293,31 @@ struct promise_t<void> {
 
   void unhandled_exception() { state->set_exception(std::current_exception()); }
 };
+
+template<typename T>
+task<T> run(std::function<task<T>()> fn) {
+  struct state {
+    std::function<task<T>()> fn;
+  };
+
+  auto statePtr = std::make_shared<state>();
+  statePtr->fn = std::move(fn);
+
+  task<T> task = statePtr->fn();
+  task.set_internal_data(statePtr);
+  return task;
+}
+
+static task<void> run(std::function<task<void>()> fn) {
+  struct state {
+    std::function<task<void>()> fn;
+  };
+
+  auto statePtr = std::make_shared<state>();
+  statePtr->fn = std::move(fn);
+
+  task<void> task = statePtr->fn();
+  task.set_internal_data(statePtr);
+  return task;
+}
 }  // namespace asyncpp

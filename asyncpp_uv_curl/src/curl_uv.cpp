@@ -166,6 +166,8 @@ void fillRequest(CURL* curl, const CurlRequest& request) {
   curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, (long)request.timeout.count());
   if (request.slist != nullptr) curl_easy_setopt(curl, CURLOPT_HTTPHEADER, request.slist);
 
+  if (request.verbose) curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+
   switch (request.method) {
     default:
     case Method::GET:

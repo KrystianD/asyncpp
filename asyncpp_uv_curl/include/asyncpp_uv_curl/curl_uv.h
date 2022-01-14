@@ -22,6 +22,7 @@ class CurlRequest {
   std::chrono::milliseconds connectTimeout = std::chrono::milliseconds(300);
   std::chrono::milliseconds timeout = std::chrono::milliseconds(60);
   curl_slist* slist = nullptr;
+  bool verbose = false;
 
   // POST
   std::string payload;
@@ -49,6 +50,8 @@ class CurlRequest {
 
   void setPayload(const std::string& data) { this->payload = data; }
   void setPayload(std::string&& data) { this->payload = std::move(data); }
+
+  void setVerbose(bool verbose) { this->verbose = verbose; }
 };
 
 class CurlResponse {

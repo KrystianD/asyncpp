@@ -20,3 +20,6 @@ target_link_libraries(example_curl_sync asyncpp_uv_curl)
 
 add_executable(example_exception example_exception.cpp)
 target_link_libraries(example_exception asyncpp_uv)
+
+add_executable(example_tcptls example_tcptls.cpp)
+target_link_libraries(example_tcptls uv_tcptls)

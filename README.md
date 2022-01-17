@@ -15,6 +15,10 @@ Provides `makeTask` function which takes a callback with `resolve` and `reject` 
 
 libuv library wrappers for usage with C++ std::function.
 
+### uv_tcptls
+
+libuv OpenSSL TLS implementation.
+
 ### asyncpp_uv
 
 libuv library wrappers to be used in coroutine-based program.

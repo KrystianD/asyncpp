@@ -6,6 +6,7 @@ option(BUILD_TESTS "Build tests" OFF)
 
 add_subdirectory(modules/asyncpp)
 add_subdirectory(modules/uvpp)
+add_subdirectory(modules/uv_tcptls)
 add_subdirectory(modules/asyncpp_uv)
 add_subdirectory(modules/asyncpp_uv_curl)
 

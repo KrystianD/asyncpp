@@ -295,7 +295,7 @@ struct promise_t<void> {
 };
 
 template<typename T>
-task<T> run(std::function<task<T>()> fn) {
+[[maybe_unused]] task<T> run(std::function<task<T>()> fn) {
   struct state {
     std::function<task<T>()> fn;
   };
@@ -308,7 +308,7 @@ task<T> run(std::function<task<T>()> fn) {
   return task;
 }
 
-static task<void> run(std::function<task<void>()> fn) {
+[[maybe_unused]] static task<void> run(std::function<task<void>()> fn) {
   struct state {
     std::function<task<void>()> fn;
   };

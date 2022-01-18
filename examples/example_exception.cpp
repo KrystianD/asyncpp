@@ -28,7 +28,7 @@ task<void> catchInThen() {
                    printf("EXCEPTION: %s\n", e.what());
                  }
                });
-  co_return ;
+  co_return;
 }
 
 task<void> asyncMain() {

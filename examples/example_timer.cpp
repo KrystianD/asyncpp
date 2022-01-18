@@ -1,6 +1,7 @@
+#include <uv.h>
+
 #include <asyncpp_uv/asyncpp_uv.h>
 #include <uvpp/uvpp.h>
-#include <uv.h>
 
 using namespace std;
 using namespace asyncpp;

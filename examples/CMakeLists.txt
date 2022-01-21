@@ -23,3 +23,6 @@ target_link_libraries(example_exception asyncpp_uv)
 
 add_executable(example_tcptls example_tcptls.cpp)
 target_link_libraries(example_tcptls uv_tcptls)
+
+add_executable(example_async example_async.cpp)
+target_link_libraries(example_async asyncpp asyncpp_uv uvpp pthread)

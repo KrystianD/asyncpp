@@ -6,3 +6,4 @@
 #include "uvpp_timer.h"
 #include "uvpp_dns.h"
 #include "uvpp_async.h"
+#include "uvpp_channel.h"

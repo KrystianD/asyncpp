@@ -49,12 +49,12 @@ bool TimerHandle::isRunning() {
   return uv_is_active((uv_handle_t*)uvHandle);
 }
 
-std::shared_ptr<TimerHandle> uvTimerStart(uint64_t timeoutMs, const TimerCallback& cb, uv_loop_t* loop) {
+std::shared_ptr<TimerHandle> uvTimerStart(uint64_t timeoutMs, TimerCallback cb, uv_loop_t* loop) {
   if (loop == nullptr) loop = uv_default_loop();
 
   uv_timer_t* uvHandle = new uv_timer_t();
 
-  std::shared_ptr<TimerHandle> timerHandle = std::make_shared<TimerHandle>(uvHandle, timeoutMs, cb);
+  std::shared_ptr<TimerHandle> timerHandle = std::make_shared<TimerHandle>(uvHandle, timeoutMs, std::move(cb));
 
   uvHandle->data = new TimerDataHandleSPtr(timerHandle);
 

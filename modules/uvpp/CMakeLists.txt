@@ -1,6 +1,7 @@
 add_library(uvpp STATIC
         ${CMAKE_CURRENT_LIST_DIR}/src/uvpp_async.cpp
         ${CMAKE_CURRENT_LIST_DIR}/src/uvpp_timer.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/src/uvpp_interval.cpp
         ${CMAKE_CURRENT_LIST_DIR}/src/uvpp_close.cpp
         ${CMAKE_CURRENT_LIST_DIR}/src/uvpp_stream.cpp
         ${CMAKE_CURRENT_LIST_DIR}/src/uvpp_tcp.cpp

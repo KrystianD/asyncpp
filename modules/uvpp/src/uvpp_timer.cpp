@@ -2,7 +2,7 @@
 
 namespace uvpp {
 void uvCloseDelete(void* handle) {
-  uv_close((uv_handle_t*)handle, [](uv_handle_t* handleInner) { delete handleInner; });
+  uv_close((uv_handle_t*)handle, [](uv_handle_t* handleInner) { delete (uv_timer_t*)handleInner; });
 }
 
 using TimerDataHandleSPtr = std::shared_ptr<TimerHandle>;

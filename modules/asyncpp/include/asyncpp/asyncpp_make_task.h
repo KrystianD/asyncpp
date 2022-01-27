@@ -3,8 +3,38 @@
 #include <functional>
 
 namespace asyncpp {
+template<typename T>
+class Resolver {
+  std::weak_ptr<awaitable_state<T>> _state;
+
+ public:
+  Resolver() = default;
+  explicit Resolver(std::shared_ptr<awaitable_state<T>> state) : _state(std::move(state)) {}
+
+  void operator()(T value) const {
+    if (std::shared_ptr<awaitable_state<T>> state = _state.lock()) {
+      state->set_value(std::move(value));
+    }
+  }
+};
+
+template<>
+class Resolver<void> {
+  std::weak_ptr<awaitable_state<void>> _state;
+
+ public:
+  Resolver() = default;
+  explicit Resolver(std::shared_ptr<awaitable_state<void>> state) : _state(std::move(state)) {}
+
+  void operator()() const {
+    if (std::shared_ptr<awaitable_state<void>> state = _state.lock()) {
+      state->set_value();
+    }
+  }
+};
+
 class Rejecter {
-  std::shared_ptr<awaitable_state_base> _state;
+  std::weak_ptr<awaitable_state_base> _state;
 
  public:
   Rejecter() = default;
@@ -12,111 +42,116 @@ class Rejecter {
 
   template<typename E>
   void operator()(const E& value) const {
-    _state->set_exception(std::make_exception_ptr(value));
+    operator()(std::make_exception_ptr(value));
   }
 
-  void operator()(std::exception_ptr exc_ptr) const { _state->set_exception(exc_ptr); }
+  void operator()(std::exception_ptr exc_ptr) const {
+    if (std::shared_ptr<awaitable_state_base> state = _state.lock()) {
+      state->set_exception(exc_ptr);
+    } else {
+      // nothing is holding a reference to this task, so exception can't be handled by the user, throwing
+      // a general error
+
+      fprintf(stderr, "Unhandled promise exception:\n");
+      rethrow_exception(exc_ptr);
+    }
+  }
 };
 
-template<typename T>
-using ResolveResultCb = std::function<void(T&&)>;
-
-using ResolveVoidCb = std::function<void()>;
-
 template<typename T, typename TState>
-[[maybe_unused]] task<T> makeTaskWithState(const std::function<void(TState&, ResolveResultCb<T>&, Rejecter&)>& cb) {
+[[maybe_unused]] task<T> makeTaskWithState(const std::function<void(TState&, Resolver<T>&, Rejecter&)>& cb) {
   auto state = std::make_shared<awaitable_state<T>>();
 
   std::shared_ptr<TState> customState = std::make_shared<TState>();
 
-  ResolveResultCb<T> resolve = [state](T&& value) { state->set_value(std::move(value)); };
-  Rejecter reject(state);
+  Resolver<T> resolver(state);
+  Rejecter rejecter(state);
 
-  cb(*customState, resolve, reject);
+  cb(*customState, resolver, rejecter);
 
   return task<T>(std::move(state), std::move(customState));
 }
 
 template<typename T, typename TState>
-[[maybe_unused]] task<T> makeTaskWithState(const std::function<void(TState&, ResolveResultCb<T>&)>& cb) {
+[[maybe_unused]] task<T> makeTaskWithState(const std::function<void(TState&, Resolver<T>&)>& cb) {
   auto state = std::make_shared<awaitable_state<T>>();
 
   std::shared_ptr<TState> customState = std::make_shared<TState>();
 
-  ResolveResultCb<T> resolve = [state](T&& value) { state->set_value(std::move(value)); };
+  Resolver<T> resolver(state);
 
-  cb(*customState, resolve);
+  cb(*customState, resolver);
 
   return task<T>(std::move(state), std::move(customState));
 }
 
 template<typename TState>
-[[maybe_unused]] task<void> makeTaskWithState(const std::function<void(TState&, ResolveVoidCb&, Rejecter&)>& cb) {
+[[maybe_unused]] task<void> makeTaskWithState(const std::function<void(TState&, Resolver<void>&, Rejecter&)>& cb) {
   auto state = std::make_shared<awaitable_state<void>>();
 
   std::shared_ptr<TState> customState = std::make_shared<TState>();
 
-  ResolveVoidCb resolve = [state]() { state->set_value(); };
-  Rejecter reject(state);
+  Resolver<void> resolver(state);
+  Rejecter rejecter(state);
 
-  cb(*customState, resolve, reject);
+  cb(*customState, resolver, rejecter);
 
   return task<void>(std::move(state), std::move(customState));
 }
 
 template<typename TState>
-[[maybe_unused]] task<void> makeTaskWithState(const std::function<void(TState&, ResolveVoidCb&)>& cb) {
+[[maybe_unused]] task<void> makeTaskWithState(const std::function<void(TState&, Resolver<void>&)>& cb) {
   auto state = std::make_shared<awaitable_state<void>>();
 
   std::shared_ptr<TState> customState = std::make_shared<TState>();
 
-  ResolveVoidCb resolve = [state]() { state->set_value(); };
+  Resolver<void> resolver(state);
 
-  cb(*customState, resolve);
+  cb(*customState, resolver);
 
   return task<void>(std::move(state), std::move(customState));
 }
 
 template<typename T>
-[[maybe_unused]] task<T> makeTask(const std::function<void(ResolveResultCb<T>&, Rejecter&)>& cb) {
+[[maybe_unused]] task<T> makeTask(const std::function<void(Resolver<T>&, Rejecter&)>& cb) {
   auto state = std::make_shared<awaitable_state<T>>();
 
-  ResolveResultCb<T> resolve = [state](T&& value) { state->set_value(std::move(value)); };
-  Rejecter reject(state);
+  Resolver<T> resolver(state);
+  Rejecter rejecter(state);
 
-  cb(resolve, reject);
+  cb(resolver, rejecter);
 
   return task<T>(std::move(state));
 }
 
 template<typename T>
-[[maybe_unused]] task<T> makeTask(const std::function<void(ResolveResultCb<T>&)>& cb) {
+[[maybe_unused]] task<T> makeTask(const std::function<void(Resolver<T>&)>& cb) {
   auto state = std::make_shared<awaitable_state<T>>();
 
-  ResolveResultCb<T> resolve = [state](T&& value) { state->set_value(std::move(value)); };
+  Resolver<T> resolver(state);
 
-  cb(resolve);
+  cb(resolver);
 
   return task<T>(std::move(state));
 }
 
-[[maybe_unused]] static task<void> makeTask(const std::function<void(ResolveVoidCb&, Rejecter&)>& cb) {
+[[maybe_unused]] static task<void> makeTask(const std::function<void(Resolver<void>&, Rejecter&)>& cb) {
   auto state = std::make_shared<awaitable_state<void>>();
 
-  ResolveVoidCb resolve = [state]() { state->set_value(); };
-  Rejecter reject(state);
+  Resolver<void> resolver(state);
+  Rejecter rejecter(state);
 
-  cb(resolve, reject);
+  cb(resolver, rejecter);
 
   return task<void>(std::move(state));
 }
 
-[[maybe_unused]] static task<void> makeTask(const std::function<void(ResolveVoidCb&)>& cb) {
+[[maybe_unused]] static task<void> makeTask(const std::function<void(Resolver<void>&)>& cb) {
   auto state = std::make_shared<awaitable_state<void>>();
 
-  ResolveVoidCb resolve = [state]() { state->set_value(); };
+  Resolver<void> resolver(state);
 
-  cb(resolve);
+  cb(resolver);
 
   return task<void>(std::move(state));
 }

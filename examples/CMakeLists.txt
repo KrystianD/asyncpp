@@ -35,3 +35,6 @@ target_link_libraries(example_async asyncpp asyncpp_uv uvpp pthread)
 
 add_executable(example_channel example_channel.cpp)
 target_link_libraries(example_channel asyncpp asyncpp_uv uvpp pthread)
+
+add_executable(example_cancel example_cancel.cpp)
+target_link_libraries(example_cancel asyncpp asyncpp_uv)

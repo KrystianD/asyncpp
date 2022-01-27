@@ -69,7 +69,9 @@ template<typename T, typename TState>
 
   cb(*customState, resolver, rejecter);
 
-  return task<T>(std::move(state), std::move(customState));
+  task<T> task(std::move(state));
+  task.set_internal_data(std::move(customState));
+  return task;
 }
 
 template<typename T, typename TState>
@@ -82,7 +84,9 @@ template<typename T, typename TState>
 
   cb(*customState, resolver);
 
-  return task<T>(std::move(state), std::move(customState));
+  task<T> task(std::move(state));
+  task.set_internal_data(std::move(customState));
+  return task;
 }
 
 template<typename TState>

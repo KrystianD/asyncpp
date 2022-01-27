@@ -6,12 +6,19 @@ asyncpp::task<void> uvCloseAsync(uv_handle_t* handle) {
   return asyncpp::makeTask([handle](auto resolve) { uvpp::uvClose(handle, [resolve](uv_handle_t*) { resolve(); }); });
 }
 
-asyncpp::task<void> uvSleepAsync(uint64_t timeoutMs) {
-  return asyncpp::makeTask([timeoutMs](auto resolve) { uvpp::uvTimerStart(timeoutMs, resolve); });
+asyncpp::cancellable_task<void> uvSleepAsync(uint64_t timeoutMs, asyncpp::cancellation_token token) {
+  return asyncpp::makeCancellableTask(
+      [timeoutMs](auto resolve) {
+        auto timer = uvpp::uvTimerStart(timeoutMs, resolve);
+
+        return [timer]() { timer->cancel(); };
+      },
+      token);
 }
 
-asyncpp::task<void> uvSleepAsync(const std::chrono::milliseconds& duration) {
-  return uvSleepAsync((uint64_t)duration.count());
+asyncpp::cancellable_task<void> uvSleepAsync(const std::chrono::milliseconds& duration,
+                                             asyncpp::cancellation_token token) {
+  return uvSleepAsync((uint64_t)duration.count(), token);
 }
 
 asyncpp::task<int> uvShutdownAsync(uv_stream_t* stream) {

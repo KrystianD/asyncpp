@@ -9,9 +9,7 @@ using namespace asyncpp_uv;
 
 long expensiveWork() {
   long v = 0;
-  for (long i = 0; i < 1000UL * 1000UL * 1000UL * 10UL; i++) {
-    v += i;
-  }
+  usleep(1 * 1000 * 1000);
   return v;
 }
 

@@ -2,6 +2,7 @@
 
 #include <uv.h>
 
+#include <chrono>
 #include <cstdint>
 #include <functional>
 #include <memory>
@@ -30,4 +31,10 @@ class IntervalHandle {
 
 std::shared_ptr<IntervalHandle> uvIntervalStart(uint64_t intervalMs, uint64_t delayMs, IntervalCallback cb,
                                                 uv_loop_t* loop = nullptr);
+
+inline std::shared_ptr<IntervalHandle> uvIntervalStart(const std::chrono::milliseconds& interval,
+                                                       const std::chrono::milliseconds& delay, IntervalCallback cb,
+                                                       uv_loop_t* loop = nullptr) {
+  return uvIntervalStart((uint64_t)interval.count(), (uint64_t)delay.count(), cb, loop);
+}
 }  // namespace uvpp

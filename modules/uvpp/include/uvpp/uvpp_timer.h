@@ -2,6 +2,7 @@
 
 #include <uv.h>
 
+#include <chrono>
 #include <cstdint>
 #include <functional>
 #include <memory>
@@ -34,4 +35,9 @@ class TimerHandle {
 };
 
 std::shared_ptr<TimerHandle> uvTimerStart(uint64_t timeoutMs, TimerCallback cb, uv_loop_t* loop = nullptr);
+
+inline std::shared_ptr<TimerHandle> uvTimerStart(const std::chrono::milliseconds& timeout, TimerCallback cb,
+                                                 uv_loop_t* loop = nullptr) {
+  return uvTimerStart((uint64_t)timeout.count(), cb, loop);
+}
 }  // namespace uvpp

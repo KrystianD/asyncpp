@@ -9,6 +9,8 @@
 #include <functional>
 #include <memory>
 
+#include "impl/cancellation.h"
+
 namespace asyncpp {
 enum struct future_error {
   not_ready,  // get_value called when value not available
@@ -29,6 +31,7 @@ struct task_cancelled : std::exception {
 
 struct awaitable_state_base {
   std::function<void(void)> _coro;
+  std::function<void(void)> _cancel_cb;
   bool _ready = false;
   std::exception_ptr _exception;
   std::shared_ptr<void> _custom_data;
@@ -39,9 +42,14 @@ struct awaitable_state_base {
 
   ~awaitable_state_base() {
     if (_exception) {
-      fprintf(stderr, "Unhandled promise exception:\n");
-      // throw the saved exception if not awaited
-      rethrow_exception(_exception);
+      // throw the saved exception if not awaited (ignore task_cancelled)
+      try {
+        rethrow_exception(_exception);
+      } catch (task_cancelled&) {
+      } catch (std::exception&) {
+        fprintf(stderr, "Unhandled promise exception:\n");
+        rethrow_exception(_exception);
+      }
     }
   }
 
@@ -69,6 +77,19 @@ struct awaitable_state_base {
   [[nodiscard]] bool ready() const { return _ready; }
 
   void set_data(std::shared_ptr<void> data) { _custom_data = data; }
+
+  void on_cancel(std::function<void(void)> cancel_cb) { _cancel_cb = std::move(cancel_cb); }
+
+  void cancel() {
+    if (_ready) {
+      return;
+    }
+    if (_cancel_cb) {
+      _cancel_cb();
+    }
+    _exception = std::make_exception_ptr(task_cancelled());
+    continue_coroutine();
+  }
 };
 
 template<typename TValue>
@@ -99,6 +120,7 @@ struct promise_t;
 
 template<typename T>
 class task {
+ protected:
   std::shared_ptr<awaitable_state<T>> _state;
 
  public:
@@ -170,6 +192,7 @@ class task {
 
 template<>
 class task<void> {
+ protected:
   std::shared_ptr<awaitable_state<void>> _state;
 
  public:
@@ -236,6 +259,26 @@ class task<void> {
   void disconnect() { _state->set_coroutine_callback(nullptr); }
 
   void set_internal_data(std::shared_ptr<void> data) { _state->set_data(data); }
+};
+
+template<typename T>
+class cancellable_task : public task<T> {
+ public:
+  explicit cancellable_task(std::shared_ptr<awaitable_state<T>> state) : task<T>(std::move(state)) {}
+
+  void set_cancellation_token(cancellation_token token) {
+    token.on_cancel([state = this->_state]() { state->cancel(); });
+  }
+};
+
+template<>
+class cancellable_task<void> : public task<void> {
+ public:
+  explicit cancellable_task(std::shared_ptr<awaitable_state<void>> state) : task<void>(std::move(state)) {}
+
+  void set_cancellation_token(cancellation_token token) {
+    token.on_cancel([state = _state]() { state->cancel(); });
+  }
 };
 
 template<typename T>

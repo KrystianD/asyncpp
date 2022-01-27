@@ -9,7 +9,7 @@ C++20 event-loop agnostic coroutines (`co_await`/`co_return`) implementation + s
 
 Event loop-agnostic implementation of C++20 coroutines (`co_await`/`co_return`).
 
-Provides `makeTask` function which takes a callback with `resolve` and `reject` passed as arguments. Similar to how JavaScript `new Promise` constructor works.
+Provides `makeTask` function which takes a callback with `resolve` and `reject` passed as arguments. Similar to how JavaScript `new Promise` constructor works. With cancellation support (C# way).
 
 ### uvpp
 

@@ -2,6 +2,8 @@
 
 #include <functional>
 
+#include "impl/cancellation.h"
+
 namespace asyncpp {
 template<typename T>
 class Resolver {
@@ -57,6 +59,8 @@ class Rejecter {
     }
   }
 };
+
+using TCancelCb = std::function<void()>;
 
 template<typename T, typename TState>
 [[maybe_unused]] task<T> makeTaskWithState(const std::function<void(TState&, Resolver<T>&, Rejecter&)>& cb) {
@@ -158,5 +162,66 @@ template<typename T>
   cb(resolver);
 
   return task<void>(std::move(state));
+}
+
+template<typename T>
+[[maybe_unused]] static cancellable_task<T> makeCancellableTask(const std::function<TCancelCb(Resolver<T>&)>& cb,
+                                                                cancellation_token token = cancellation_token::empty) {
+  auto state = std::make_shared<awaitable_state<T>>();
+
+  Resolver<T> resolver(state);
+
+  TCancelCb cancel_cb = cb(resolver);
+  state->on_cancel(std::move(cancel_cb));
+
+  cancellable_task<T> task(std::move(state));
+  task.set_cancellation_token(token);
+  return task;
+}
+
+[[maybe_unused]] static cancellable_task<void> makeCancellableTask(
+    const std::function<TCancelCb(Resolver<void>&)>& cb, cancellation_token token = cancellation_token::empty) {
+  auto state = std::make_shared<awaitable_state<void>>();
+
+  Resolver<void> resolver(state);
+
+  TCancelCb cancel_cb = cb(resolver);
+  state->on_cancel(std::move(cancel_cb));
+
+  cancellable_task<void> task(std::move(state));
+  task.set_cancellation_token(token);
+  return task;
+}
+
+template<typename T>
+[[maybe_unused]] static cancellable_task<T> makeCancellableTask(
+    const std::function<TCancelCb(Resolver<T>&, Rejecter&)>& cb, cancellation_token token = cancellation_token::empty) {
+  auto state = std::make_shared<awaitable_state<T>>();
+
+  Resolver<T> resolver(state);
+  Rejecter rejecter(state);
+
+  TCancelCb cancel_cb = cb(resolver, rejecter);
+  state->on_cancel(std::move(cancel_cb));
+
+  cancellable_task<T> task(std::move(state));
+  task.set_cancellation_token(token);
+  return task;
+}
+
+[[maybe_unused]] static cancellable_task<void> makeCancellableTask(
+    const std::function<TCancelCb(Resolver<void>&, Rejecter&)>& cb,
+    cancellation_token token = cancellation_token::empty) {
+  auto state = std::make_shared<awaitable_state<void>>();
+
+  Resolver<void> resolver(state);
+  Rejecter rejecter(state);
+
+  TCancelCb cancel_cb = cb(resolver, rejecter);
+  state->on_cancel(std::move(cancel_cb));
+
+  cancellable_task<void> task(std::move(state));
+  task.set_cancellation_token(token);
+  return task;
 }
 }  // namespace asyncpp

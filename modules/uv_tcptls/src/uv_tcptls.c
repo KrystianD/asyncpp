@@ -160,8 +160,6 @@ static void uv_tcptls_on_close(uv_handle_t* uv_handle) {
 
 // Public API
 void uv_tcptls_init(uv_loop_t* loop, uv_tcptls_t* handle, SSL_CTX* ssl_ctx) {
-  memset(handle, 0, sizeof(uv_tcptls_t));
-
   handle->tcp = (uv_tcp_t*)malloc(sizeof(uv_tcp_t));
   handle->tcp->data = handle;
   handle->ssl = SSL_new(ssl_ctx);

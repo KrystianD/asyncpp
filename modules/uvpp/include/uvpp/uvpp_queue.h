@@ -36,7 +36,9 @@ void uvRunInThread(WorkCallback<T> workCb, AfterWorkCallback<T> afterWorkCb, uv_
       [](uv_work_t* handleInner, int status) {
         Data* data = (Data*)handleInner->data;
 
-        data->afterWorkCb(std::move(data->result));
+        if (status != UV_ECANCELED) {
+          data->afterWorkCb(std::move(data->result));
+        }
 
         delete data;
         delete handleInner;

@@ -4,19 +4,21 @@
 #include <gtest/gtest.h>
 #include <uv.h>
 
-#include <semaphore>
 #include <thread>
+#include <pthread.h>
 
-static std::binary_semaphore sem(false);
+static sem_t sem;
 
 static void runAsync(const std::function<asyncpp::task<void>()> &f) {
+  sem_init(&sem, 0, 0);
+
   std::exception_ptr excPtr;
-  f().then([]() { sem.release(); },
+  f().then([]() { sem_post(&sem); },
            [&excPtr](const std::exception_ptr &exc) {
              excPtr = exc;
-             sem.release();
+             sem_post(&sem);
            });
-  sem.acquire();
+  sem_wait(&sem);
   if (excPtr) std::rethrow_exception(excPtr);
 }
 

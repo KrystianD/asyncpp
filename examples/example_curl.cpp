@@ -20,11 +20,24 @@ task<void> testDelete() {
   printf("%s\n", resp.toString().c_str());
 }
 
+task<void> testCancel() {
+  curl_uv::CurlRequest req = curl_uv::get("https://httpbin.org/delay/5");
+  cancellation_token_source tcs;
+
+  uvpp::uvTimerStart(1000, [&tcs]() { tcs.cancel(); });
+  try {
+    co_await asyncpp_uv_curl::uvCurlExecute(std::move(req), tcs.get_token());
+  } catch (task_cancelled&) {
+    printf("curl cancelled\n");
+  }
+}
+
 task<void> asyncMain() {
   printf("asyncMain BEGIN\n");
   co_await testGet();
   co_await testPost();
   co_await testDelete();
+  co_await testCancel();
   printf("asyncMain END\n");
 }
 

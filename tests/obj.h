@@ -1,7 +1,10 @@
 #pragma once
 
+namespace obj {
 static int moves = 0;
 static int copies = 0;
+
+void clear() { moves = copies = 0; }
 
 class Obj {
  public:
@@ -21,11 +24,14 @@ class Obj {
 
   Obj(Obj&& o) {
     v = o.v;
+    o.v = 9999;
     moves++;
   }
   Obj& operator=(Obj&& o) {
     v = o.v;
+    o.v = 9999;
     moves++;
     return *this;
   }
 };
+}  // namespace obj

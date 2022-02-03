@@ -76,11 +76,24 @@ class CurlResponse {
 
 typedef std::function<void(CurlResponse&& response)> CurlCompletedCb;
 
+class CurlSession {
+  struct _state;
+
+  std::shared_ptr<_state> _impl;
+
+  CurlSession(std::shared_ptr<_state> impl);
+
+ public:
+  void abort();
+
+  friend CurlSession execute(CurlRequest&& request, CurlCompletedCb completedCb);
+};
+
 CurlRequest get(const std::string& url);
 CurlRequest post(const std::string& url);
 CurlRequest delete_(const std::string& url);
 
-void execute(CurlRequest&& request, CurlCompletedCb completedCb);
+CurlSession execute(CurlRequest&& request, CurlCompletedCb completedCb);
 CurlResponse executeSync(CurlRequest&& request);
 
 void unload();

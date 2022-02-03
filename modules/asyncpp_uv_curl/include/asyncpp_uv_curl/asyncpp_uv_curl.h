@@ -8,8 +8,15 @@
 #include "curl_uv.h"
 
 namespace asyncpp_uv_curl {
-[[maybe_unused]] static asyncpp::task<curl_uv::CurlResponse> uvCurlExecute(curl_uv::CurlRequest&& req) {
-  return asyncpp::makeTask<curl_uv::CurlResponse>([&req](auto resolve) { curl_uv::execute(std::move(req), resolve); });
+[[maybe_unused]] static asyncpp::task<curl_uv::CurlResponse> uvCurlExecute(
+    curl_uv::CurlRequest&& req, asyncpp::cancellation_token token = asyncpp::cancellation_token::empty) {
+  return asyncpp::makeCancellableTask<curl_uv::CurlResponse>(
+      [&req](auto resolve) {
+        auto ses = curl_uv::execute(std::move(req), resolve);
+
+        return [ses]() mutable { ses.abort(); };
+      },
+      token);
 }
 
 [[maybe_unused]] static asyncpp::task<curl_uv::CurlResponse> uvCurlGET(const std::string& url) {

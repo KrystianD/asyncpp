@@ -77,6 +77,7 @@ static void curl_checkMultiInfo() {
 
         curl_multi_remove_handle(curlMultiHandle, session->handle);
         curl_easy_cleanup(session->handle);
+        session->handle = nullptr;
         delete session;
         break;
       }
@@ -207,7 +208,26 @@ void fillResponse(CurlPrivateSession* session, CURLcode result) {
   if (result != CURLE_OK) session->response.error = session->errorBuffer;
 }
 
-void execute(CurlRequest&& request, CurlCompletedCb completedCb) {
+struct CurlSession::_state {
+  CurlPrivateSession* _session;
+
+  _state(CurlPrivateSession* session) : _session(session) {}
+
+  void abort() {
+    if (!_session) return;
+    if (!_session->handle) return;
+
+    curl_multi_remove_handle(curlMultiHandle, _session->handle);
+    curl_easy_cleanup(_session->handle);
+    delete _session;
+    _session = 0;
+  }
+};
+
+CurlSession::CurlSession(std::shared_ptr<_state> impl) : _impl(impl) {}
+void CurlSession::abort() { _impl->abort(); }
+
+CurlSession execute(CurlRequest&& request, CurlCompletedCb completedCb) {
   CurlPrivateSession* session = new CurlPrivateSession();
 
   session->request = std::move(request);
@@ -228,6 +248,9 @@ void execute(CurlRequest&& request, CurlCompletedCb completedCb) {
     delete session;
     throw std::runtime_error("curl add handle error");
   }
+
+  auto state = std::make_shared<CurlSession::_state>(session);
+  return CurlSession(state);
 }
 
 CurlResponse executeSync(CurlRequest&& request) {

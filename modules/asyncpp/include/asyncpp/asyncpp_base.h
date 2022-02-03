@@ -299,9 +299,7 @@ struct promise_t {
   [[nodiscard]] std::suspend_never initial_suspend() const noexcept { return {}; }
   [[nodiscard]] std::suspend_never final_suspend() const noexcept { return {}; }
 
-  void return_value(T&& val) { state->set_value(std::move(val)); }
-
-  void return_value(const T& val) { state->set_value(val); }
+  void return_value(T val) { state->set_value(std::move(val)); }
 
   void unhandled_exception() { state->set_exception(std::current_exception()); }
 };

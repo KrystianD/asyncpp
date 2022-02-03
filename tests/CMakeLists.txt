@@ -7,5 +7,6 @@ add_executable(test test_main.cpp
         test_exception.cpp
         test_ref.cpp
         test_cancellation.cpp
+        test_pass.cpp
         )
 target_link_libraries(test asyncpp_uv gtest pthread)

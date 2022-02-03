@@ -6,9 +6,9 @@
 #include <string>
 #include <utility>
 #include <chrono>
+#include <memory>
 
 namespace curl_uv {
-struct CurlSession;
 
 enum class Method {
   GET,
@@ -75,16 +75,6 @@ class CurlResponse {
 };
 
 typedef std::function<void(CurlResponse&& response)> CurlCompletedCb;
-
-struct CurlSession {
-  CURL* handle;
-  char errorBuffer[CURL_ERROR_SIZE];
-
-  CurlRequest request;
-  CurlResponse response;
-
-  CurlCompletedCb completedCb;
-};
 
 CurlRequest get(const std::string& url);
 CurlRequest post(const std::string& url);

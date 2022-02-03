@@ -13,10 +13,22 @@
 #include <sstream>
 
 namespace curl_uv {
+struct CurlPrivateSession;
+
 CURLM* curlMultiHandle;
 uv_timer_t uvTimeout;
 
-void fillResponse(CurlSession* session, CURLcode result);
+void fillResponse(CurlPrivateSession* session, CURLcode result);
+
+struct CurlPrivateSession {
+  CURL* handle;
+  char errorBuffer[CURL_ERROR_SIZE];
+
+  CurlRequest request;
+  CurlResponse response;
+
+  CurlCompletedCb completedCb;
+};
 
 typedef struct curl_context_s {
   uv_poll_t poll_handle;
@@ -54,7 +66,7 @@ static void curl_checkMultiInfo() {
            returned pointer points to will not survive calling
                  curl_multi_cleanup, curl_multi_remove_handle or
                                          curl_easy_cleanup." */
-        CurlSession* session;
+        CurlPrivateSession* session;
         curl_easy_getinfo(message->easy_handle, CURLINFO_PRIVATE, &session);
 
         CURLcode result = message->data.result;
@@ -138,7 +150,7 @@ static int curl_handleSocket(CURL* easy [[maybe_unused]], curl_socket_t s, int a
 }
 
 static size_t curl_writeFunction(void* data, size_t size, size_t nmemb, void* userp) {
-  CurlSession* session = (CurlSession*)userp;
+  CurlPrivateSession* session = (CurlPrivateSession*)userp;
 
   size_t realsize = size * nmemb;
 
@@ -185,7 +197,7 @@ void fillRequest(CURL* curl, const CurlRequest& request) {
   }
 }
 
-void fillResponse(CurlSession* session, CURLcode result) {
+void fillResponse(CurlPrivateSession* session, CURLcode result) {
   long statusCode = 0;
   curl_easy_getinfo(session->handle, CURLINFO_RESPONSE_CODE, &statusCode);
 
@@ -196,7 +208,7 @@ void fillResponse(CurlSession* session, CURLcode result) {
 }
 
 void execute(CurlRequest&& request, CurlCompletedCb completedCb) {
-  CurlSession* session = new CurlSession();
+  CurlPrivateSession* session = new CurlPrivateSession();
 
   session->request = std::move(request);
   session->response.buffer.reserve(1024);
@@ -219,7 +231,7 @@ void execute(CurlRequest&& request, CurlCompletedCb completedCb) {
 }
 
 CurlResponse executeSync(CurlRequest&& request) {
-  CurlSession* session = new CurlSession();
+  CurlPrivateSession* session = new CurlPrivateSession();
 
   session->request = std::move(request);
   session->response.buffer.reserve(1024);

@@ -15,7 +15,7 @@ int getThreadId() { return gettid(); }
 void callback(int v) { printf("callback %d (thread: %d)\n", v, getThreadId()); }
 
 int main() {
-  auto channel = uvpp::uvChannel<int>::create(5, [](int v) { callback(v); });
+  auto channel = uvpp::utils::uvChannel<int>::create(5, [](int v) { callback(v); });
 
   printf("main (thread: %d)\n", getThreadId());
 

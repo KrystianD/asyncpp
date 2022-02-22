@@ -7,5 +7,5 @@
 #include "uvpp_interval.h"
 #include "uvpp_dns.h"
 #include "uvpp_async.h"
-#include "uvpp_channel.h"
 #include "uvpp_queue.h"
+#include "utils/uvpp_channel.h"

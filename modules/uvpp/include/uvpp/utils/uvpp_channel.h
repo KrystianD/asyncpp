@@ -8,7 +8,7 @@
 #include <memory>
 #include <mutex>
 
-namespace uvpp {
+namespace uvpp::utils {
 template<typename T>
 class uvChannel {
   std::function<void(T)> cb;
@@ -66,4 +66,4 @@ class uvChannel {
     return std::shared_ptr<uvChannel>(channel);
   }
 };
-}  // namespace uvpp
+}  // namespace uvpp::utils

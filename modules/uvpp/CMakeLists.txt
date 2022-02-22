@@ -9,6 +9,7 @@ add_library(uvpp STATIC
 
         # Header only
         ${CMAKE_CURRENT_LIST_DIR}/include/uvpp/utils/uvpp_channel.h
+        ${CMAKE_CURRENT_LIST_DIR}/include/uvpp/utils/uvpp_executor.h
         )
 target_link_libraries(uvpp PUBLIC -luv)
 target_include_directories(uvpp PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)

@@ -18,8 +18,8 @@ class uvChannel {
   std::condition_variable cond;
 
   std::vector<T> buffer;
-  int readPos = 0, writePos = 0;
-  int count = 0;
+  size_t readPos = 0, writePos = 0;
+  size_t count = 0;
 
   uvChannel(uv_loop_t* loop) {
     async = new uv_async_t();

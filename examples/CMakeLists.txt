@@ -33,6 +33,9 @@ target_link_libraries(example_tcptls uv_tcptls)
 add_executable(example_async example_async.cpp)
 target_link_libraries(example_async asyncpp asyncpp_uv uvpp pthread)
 
+add_executable(example_executor example_executor.cpp)
+target_link_libraries(example_executor asyncpp asyncpp_uv uvpp pthread)
+
 add_executable(example_channel example_channel.cpp)
 target_link_libraries(example_channel asyncpp asyncpp_uv uvpp pthread)
 

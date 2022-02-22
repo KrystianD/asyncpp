@@ -45,7 +45,7 @@ class uvChannel {
     uv_async_send(async);
   }
 
-  static std::shared_ptr<uvChannel> create(size_t size, std::function<void(T)> cb, uv_loop_t* loop = nullptr) {
+  static std::shared_ptr<uvChannel> create(size_t size, std::function<void(T)> cb, uv_loop_t* loop = nullptr) noexcept {
     uvChannel* channel = new uvChannel(size, loop ? loop : uv_default_loop());
     channel->cb = std::move(cb);
     return std::shared_ptr<uvChannel>(channel);

@@ -47,7 +47,7 @@ class uvExecutor {
 
   void unref() { uv_unref((uv_handle_t*)async); }
 
-  static std::shared_ptr<uvExecutor> create(size_t size, uv_loop_t* loop = nullptr) {
+  static std::shared_ptr<uvExecutor> create(size_t size, uv_loop_t* loop = nullptr) noexcept {
     uvExecutor* queue = new uvExecutor(size, loop ? loop : uv_default_loop());
     return std::shared_ptr<uvExecutor>(queue);
   }

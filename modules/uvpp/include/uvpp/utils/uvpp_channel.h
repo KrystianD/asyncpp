@@ -2,11 +2,7 @@
 
 #include <uv.h>
 
-#include <condition_variable>
-#include <functional>
-#include <list>
-#include <memory>
-#include <mutex>
+#include "_uvpp_ring_buffer.h"
 
 namespace uvpp::utils {
 template<typename T>
@@ -14,14 +10,9 @@ class uvChannel {
   std::function<void(T)> cb;
   uv_async_t* async;
 
-  std::mutex mutex;
-  std::condition_variable cond;
+  RingBuffer<T> buffer;
 
-  std::vector<T> buffer;
-  size_t readPos = 0, writePos = 0;
-  size_t count = 0;
-
-  uvChannel(uv_loop_t* loop) {
+  uvChannel(size_t size, uv_loop_t* loop) : buffer(size) {
     async = new uv_async_t();
     async->data = this;
     uv_async_init(loop, async, [](uv_async_t* async_) { ((uvChannel*)async_->data)->onAsyncEvent(); });
@@ -34,14 +25,14 @@ class uvChannel {
   uvChannel& operator=(uvChannel&&) noexcept = delete;
 
   void onAsyncEvent() {
-    std::unique_lock<std::mutex> lock(mutex);
-    while (count > 0) {
-      cb(std::move(buffer[readPos]));
-      readPos++;
-      if (readPos == buffer.size()) readPos = 0;
-      count--;
+    while (true) {
+      auto [res, value] = std::move(buffer.tryDequeue());
+
+      if (res)
+        cb(std::move(value));
+      else
+        return;
     }
-    cond.notify_all();
   }
 
  public:
@@ -50,18 +41,12 @@ class uvChannel {
   }
 
   void send(T value) {
-    std::unique_lock<std::mutex> lock(mutex);
-    cond.wait(lock, [this]() { return count < buffer.size(); });
-    buffer[writePos] = std::move(value);
-    writePos++;
-    if (writePos == buffer.size()) writePos = 0;
-    count++;
+    buffer.enqueue(std::move(value));
     uv_async_send(async);
   }
 
   static std::shared_ptr<uvChannel> create(size_t size, std::function<void(T)> cb, uv_loop_t* loop = nullptr) {
-    uvChannel* channel = new uvChannel(loop ? loop : uv_default_loop());
-    channel->buffer.resize(size);
+    uvChannel* channel = new uvChannel(size, loop ? loop : uv_default_loop());
     channel->cb = std::move(cb);
     return std::shared_ptr<uvChannel>(channel);
   }

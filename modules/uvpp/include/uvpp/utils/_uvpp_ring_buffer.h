@@ -16,7 +16,7 @@ class RingBuffer {
   size_t count = 0;
 
  public:
-  RingBuffer(size_t size) { buffer.resize(size); }
+  explicit RingBuffer(size_t size) { buffer.resize(size); }
 
   RingBuffer(RingBuffer&) noexcept = delete;
   RingBuffer& operator=(RingBuffer&) noexcept = delete;

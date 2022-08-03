@@ -26,6 +26,8 @@ class IntervalHandle {
 
   bool isRunning();
 
+  void* getHandle() { return handle; }
+
   friend void intervalCb(uv_timer_t* uvHandle);
 };
 

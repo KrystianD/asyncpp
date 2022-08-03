@@ -31,6 +31,8 @@ class TimerHandle {
 
   bool isRunning();
 
+  void* getHandle() { return handle; }
+
   friend void timerCb(uv_timer_t* uvHandle);
 };
 

@@ -21,7 +21,7 @@ class uvExecutor {
   uvExecutor(uvExecutor&) noexcept = delete;
   uvExecutor& operator=(uvExecutor&) noexcept = delete;
 
-  uvExecutor(uvExecutor&&) noexcept = default;
+  uvExecutor(uvExecutor&&) noexcept = delete;
   uvExecutor& operator=(uvExecutor&&) noexcept = delete;
 
   void onAsyncEvent() {

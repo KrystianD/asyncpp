@@ -21,7 +21,7 @@ class uvChannel {
   uvChannel(uvChannel&) noexcept = delete;
   uvChannel& operator=(uvChannel&) noexcept = delete;
 
-  uvChannel(uvChannel&&) noexcept = default;
+  uvChannel(uvChannel&&) noexcept = delete;
   uvChannel& operator=(uvChannel&&) noexcept = delete;
 
   void onAsyncEvent() {
